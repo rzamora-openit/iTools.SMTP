@@ -1,0 +1,57 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+
+<aside class="main-sidebar sidebar-dark-light elevation-2 mdc-light-theme">
+	<div class="sidebar">
+		<div class="user-panel border-bottom border-white d-flex flex-column justify-content-center">
+			<div class="image text-center p-0">
+				<img class="rounded-circle bg-white" src="@($"/file/image/{appUser?.Email}")" onerror="if (this.src != '/images/textures/bright-squares.png') this.src = '/images/textures/bright-squares.png';" />
+			</div>
+			<div class="info text-center mt-2">
+				<span class="d-block text-md text-bold text-white text-wrap text-break">@appUser?.DisplayName</span>
+				@*<span class="d-block text-sm text-white-50">@appUser?.InternalAccount?.JobTitle</span>*@
+			</div>
+		</div>
+		<nav class="nav-scrollable">
+			<ul class="nav nav-pills nav-sidebar flex-column text-sm nav-flat">
+				@foreach (var serviceGroup in siteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type == ServiceGroupType.MainSidebar)?.OrderBy(sg => sg?.OrderOfImportance) ?? Enumerable.Empty<ServiceGroupViewModel>())
+				{
+					if (string.Equals(serviceGroup?.Services?.FirstOrDefault()?.Title, "Home"))
+					{
+						<MatRipple Class="nav-item">
+							<NavLink Match="serviceGroup.Services.First().UriMatch" href="@serviceGroup?.Services?.FirstOrDefault()?.Uri" class="nav-link d-flex align-items-center">		
+								<MatIcon Style="font-size: 1.5rem" Class="pl-2 pr-2" Icon="@serviceGroup?.Services?.FirstOrDefault()?.Icon"></MatIcon>
+								<p>@serviceGroup?.Services?.FirstOrDefault()?.Title</p>
+							</NavLink>
+						</MatRipple>
+					}
+					else
+					{
+						<li class="nav-item has-treeview @(siteCascadingValue.ServiceGroupKeyToCollapsedMap.ContainsKey(serviceGroup.Key) && !siteCascadingValue.ServiceGroupKeyToCollapsedMap[serviceGroup.Key] ? "menu-open" : string.Empty)">
+							<MatRipple Class="nav-link d-flex align-items-center justify-content-between" @onclick="async () => await this.ToggleServiceGroupCollapsed(serviceGroup)">
+								<div class="d-flex align-items-center">
+									<div class="combine-icon mr-2">
+										<MatIcon Style="font-size: 2rem" Icon="@serviceGroup?.Icon"></MatIcon>
+										<MatIcon Style="font-size: 1rem" Icon="settings_applications"></MatIcon>
+									</div>
+									<p>@serviceGroup?.Title</p>
+								</div>
+								<MatIcon Class="nav-arrow" Icon="keyboard_arrow_down"></MatIcon>
+							</MatRipple>
+							<ul class="nav nav-treeview">
+								@foreach (var service in serviceGroup?.Services?.OrderBy(s => s?.OrderOfImportance) ?? Enumerable.Empty<ServiceViewModel>())
+								{
+									<MatRipple Class="nav-item">
+										<NavLink Match="serviceGroup.Services.First().UriMatch" href="@service?.Uri" class="nav-link d-flex align-items-center">
+											<MatIcon Style="font-size: 1.5rem" Class="pl-2 pr-2" Icon="@service?.Icon"></MatIcon>
+											<p>@service?.Title</p>
+										</NavLink>
+									</MatRipple>
+								}
+							</ul>
+						</li>
+					}
+				}
+			</ul>
+		</nav>
+	</div>
+</aside>

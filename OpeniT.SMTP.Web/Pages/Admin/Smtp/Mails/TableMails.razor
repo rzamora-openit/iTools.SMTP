@@ -1,0 +1,203 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Admin
+
+@if (ManageMails.IsBusy)
+{
+	<div class="@(Shown && ManageMails.GetVisibleComponents().Count() == 1 ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
+		<MatProgressBar Class="position-sticky" Style="top: 0;" Indeterminate="true"></MatProgressBar>
+	</div>
+}
+<div class="@(Shown ? "animateFadeIn" : "d-none")">
+	<section class="content-header position-sticky">
+		<div class="container-fluid d-flex align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
+			@if (browserSize?.SmallDown == true)
+			{
+				<div class="d-flex align-items-center" style="min-width: 0;">
+					<MatIcon Icon="email"></MatIcon>
+					<span class="text-truncate text-lg text-bold ml-1" data-toggle="tooltip" title="Mails">Mails</span>
+				</div>
+				<div class="text-right">
+					<NavLink href="/admin/smtp/mails/add" class="d-inline-block">
+						<MatListItem>
+							<MatIconButton Class="mdc-icon-button-primary" Icon="library_add" data-toggle="tooltip" title="Add Mail"></MatIconButton>
+						</MatListItem>
+					</NavLink>
+					<Dropdown Class="d-inline-block" MenuClass="mdc-menu-with-anchor">
+						<ButtonContent>
+							<MatIconButton Class="mdc-icon-button-primary">
+								<span class="material-icons">search</span>
+							</MatIconButton>
+						</ButtonContent>
+						<MenuContent Context="menu">
+							<div class="mdc-text-field-clear-group p-2">
+								<MatTextField Class="full-width dense--5 m-0" ValueChanged="@(async (string e) => { await menu.CloseAsync(); await this.SearchChanged(e); })" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@ManageMails.SearchValue" Icon="search"></MatTextField>
+								@if (!string.IsNullOrWhiteSpace(ManageMails.SearchValue) || !string.IsNullOrWhiteSpace(_searchValue))
+								{
+									<MatIcon Class="clear-button" Icon="close" @onclick="async () => { await menu.CloseAsync(); await this.SearchChanged(null); }"></MatIcon>
+								}
+							</div>
+						</MenuContent>
+					</Dropdown>
+				</div>
+			}
+			else
+			{
+				<div class="d-flex align-items-center">
+					<div class="d-flex align-items-center border-right pr-3">
+						<MatIcon Icon="email"></MatIcon>
+						<span class="text-lg text-bold ml-1">Mails</span>
+					</div>
+					<div class="mdc-text-field-clear-group pl-3">
+						<MatTextField Style="width: 20rem;" Class="dense--5 m-0" ValueChanged="@((string e) => this.SearchChanged(e))" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@ManageMails.SearchValue" Icon="search"></MatTextField>
+						@if (!string.IsNullOrWhiteSpace(ManageMails.SearchValue) || !string.IsNullOrWhiteSpace(_searchValue))
+						{
+							<MatIcon Class="clear-button" Icon="close" @onclick="() => this.SearchChanged(null)"></MatIcon>
+						}
+					</div>
+				</div>
+				<div class="text-right">
+					<NavLink href="/admin/smtp/mails/add">
+						<MatButton Unelevated="true" Icon="library_add" Class="ml-1">Add Mail</MatButton>
+					</NavLink>
+				</div>
+			}
+		</div>
+	</section>
+	<section class="content bg-white p-0">
+		<div class="container-fluid p-0">
+			<div class="d-flex flex-wrap align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
+				<Paginator Class="d-flex justify-content-end flex-grow-1" Length="@ManageMails.SelectedPage.Length" PageSize="ManageMails.SelectedPage.PageSize" PageIndex="ManageMails.SelectedPage.PageIndex" Page="@this.PaginationChanged" Summarized="browserSize?.SmallDown == true"></Paginator>
+			</div>
+			<div class="position-relative pl-responsive pr-responsive">
+				<div class="table-responsive">
+					<table class="table table-valign-middle">
+						<thead>
+							<MatSortHeaderRow SortId="@ManageMails.SelectedSort.SortId" Direction="@ManageMails.SelectedSort.Direction" SortChanged="@this.SortChanged">
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="Subject" nowrap>
+									<span>Subject</span>
+									@{
+										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "Subject");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+									}
+								</MatSortHeader>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="From" nowrap>
+									<span>From</span>
+									@{
+										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "From");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+									}
+								</MatSortHeader>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="To" nowrap>
+									<span>To</span>
+									@{
+										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "To");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+									}
+								</MatSortHeader>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="CC" nowrap>
+									<span>CC</span>
+									@{
+										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "CC");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+									}
+								</MatSortHeader>
+								<th class="bg-white text-right position-sticky border-bottom-0" style="right: 0;" nowrap><span class="text-gray">Actions</span></th>
+							</MatSortHeaderRow>
+						</thead>
+						<tbody>
+							@if (Enumerable.Any(ManageMails.Mails ?? Enumerable.Empty<SmtpMail>()))
+							{
+								@foreach (var mail in ManageMails.Mails ?? Enumerable.Empty<SmtpMail>())
+								{
+									<tr>
+										<td>
+											<div class="d-flex align-items-center">
+												<div class="d-flex flex-column accent-dark">
+													<NavLink class="line-height-1" href="@($"/admin/smtp/mails/view/{mail?.Guid}")">@mail.Subject</NavLink>
+												</div>
+											</div>
+										</td>
+										<td>@mail?.From?.Address</td>
+										<td class="position-relative line-height-1" nowrap>
+											@if (!Enumerable.Any(mail?.To ?? Enumerable.Empty<SmtpMailAddress>()))
+											{
+												<div class="dashed pl-4 pr-4"></div>
+											}
+											else
+											{
+												var mailTos = mail?.To.OrderBy(to => to?.Address).Take(3);
+												@foreach (var mailTo in mailTos)
+												{
+													if (mailTos.Last() == mailTo && mail?.To.Count() > 3)
+													{
+														<span class="m-0" data-toggle="tooltip" title="@(string.Join(", ", mail?.To?.OrderBy(to => to?.Address).Skip(2).Select(to => to?.Address)))">+ @(mail?.To?.Count() - 2) other(s)</span>
+													}
+													else
+													{
+														<p class="m-0">@mailTo.Address</p>
+													}
+												}
+											}
+										</td>
+										<td class="position-relative line-height-1" nowrap>
+											@if (!Enumerable.Any(mail?.CC ?? Enumerable.Empty<SmtpMailAddress>()))
+											{
+												<div class="dashed pl-4 pr-4"></div>
+											}
+											else
+											{
+												var mailCCs = mail?.CC.OrderBy(to => to?.Address).Take(3);
+												@foreach (var mailCC in mailCCs)
+												{
+													if (mailCCs.Last() == mailCC && mail?.CC.Count() > 3)
+													{
+														<span class="m-0" data-toggle="tooltip" title="@(string.Join(", ", mail?.CC?.OrderBy(cc => cc?.Address).Skip(2).Select(cc => cc?.Address)))">+ @(mail?.CC?.Count() - 2) other(s)</span>
+													}
+													else
+													{
+														<p class="m-0">@mailCC.Address</p>
+													}
+												}
+											}
+										</td>
+										<td class="bg-white text-right position-sticky" style="right: 0;" nowrap>
+											<NavLink href="@($"/admin/smtp/mails/view/{mail?.Guid}")">
+												<MatIconButton Class="mdc-icon-button-primary" Icon="view_compact" data-toggle="tooltip" title="View Details"></MatIconButton>
+											</NavLink>
+										</td>
+									</tr>
+								}
+							}
+							else if (!Enumerable.Any(ManageMails.Mails ?? Enumerable.Empty<SmtpMail>()))
+							{
+								if (ManageMails.IsBusy)
+								{
+									<tr>
+										<td class="text-center" colspan="100%">
+											<Loading></Loading>
+										</td>
+									</tr>
+								}
+								else if (ManageMails.IsDataLoaded)
+								{
+									<tr>
+										<td class="text-center" colspan="100%">
+											<img src="images/fallback/page-not-found-icon.png" style="padding: 8px; width: 100%; height: 100%; object-fit: scale-down;">
+											@if (ManageMails.HasSelectedFilter)
+											{
+												<span class="text-bold text-gray">No matching mail found</span>
+											}
+											else
+											{
+												<span class="text-bold text-gray">No data to display</span>
+											}
+										</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>

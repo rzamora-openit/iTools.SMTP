@@ -1,0 +1,29 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared
+
+<div class="loading-container @Class" style="@Style">
+	<div class="load-6">
+		<div class="letter-holder p-0">
+			<div class="l-1 letter">L</div>
+			<div class="l-2 letter">o</div>
+			<div class="l-3 letter">a</div>
+			<div class="l-4 letter">d</div>
+			<div class="l-5 letter">i</div>
+			<div class="l-6 letter">n</div>
+			<div class="l-7 letter">g</div>
+			<div class="l-8 letter">.</div>
+			<div class="l-9 letter">.</div>
+			<div class="l-10 letter">.</div>
+		</div>
+	</div>
+	<div class="load-2">
+		<div class="line"></div>
+		<div class="line"></div>
+		<div class="line"></div>
+	</div>
+</div>
+
+@code {
+	[Parameter] public string Class { get; set; }
+	[Parameter] public string Style { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Attributes { get; set; }
+} 

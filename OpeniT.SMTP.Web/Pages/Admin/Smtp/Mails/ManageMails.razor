@@ -1,0 +1,13 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Admin
+
+<CascadingValue Value="@this">
+	@if (componentStates["table"].Shown)
+	{
+		<TableMails OnFilterChanged="@this.FiltersChanged" Shown="@componentStates["table"].Shown"></TableMails>
+	}
+
+	@if (componentStates["add"].Rendered)
+	{
+		<AddMail Shown="@componentStates["add"].Shown"></AddMail>
+	}
+</CascadingValue>

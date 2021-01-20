@@ -1,0 +1,37 @@
+﻿@inherits LayoutComponentBase
+@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+
+<CascadingValue Value="@browserSizeState">
+	<CascadingValue Value="@siteCascadingValue">
+		<div class="@classMapper">
+			<AdminNavMenu></AdminNavMenu>
+			<SideBarMenu></SideBarMenu>
+
+			<MatToastContainer></MatToastContainer>
+			<MatPortalHost></MatPortalHost>
+
+			<div class="content-wrapper">
+				@if (siteCascadingValue.SidebarIsOpen)
+				{
+					<div class="sidebar-overlay overlay animateFadeIn" @onclick="this.CloseSidebars"></div>
+				}
+
+				@Body
+			</div>
+
+			<footer class="main-footer">
+				<div class="float-right d-none d-sm-inline">
+					Version 1.1
+				</div>
+				<strong>Copyright &copy; 2020 Open iT, Inc.</strong> All rights reserved.
+			</footer>
+		</div>
+	</CascadingValue>
+</CascadingValue>
+
+@if (!isInitialized || !isSizeInitialized)
+{
+	<div class="loading-wrapper">
+		<Loading Class="bg-dark"></Loading>
+	</div>
+}

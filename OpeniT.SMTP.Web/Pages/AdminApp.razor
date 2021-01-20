@@ -1,0 +1,24 @@
+﻿@namespace OpeniT.SMTP.Web.Pages
+
+<CascadingAuthenticationState>
+	<Router AppAssembly="@typeof(Program).Assembly">
+		<Found Context="routeData">
+			<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Shared.Admin.MainLayout)">
+				<NotAuthorized>
+					<NotAuthorizedRedirect AuthenticationState="@context"></NotAuthorizedRedirect>
+				</NotAuthorized>
+			</AuthorizeRouteView>
+		</Found>
+		<NotFound>
+			<LayoutView Layout="@typeof(Shared.Admin.MainLayout)">
+				<div class="content-header p-0">
+					<div class="container mw-100 w-100 p-3">
+						<div class="d-flex flex-column align-items-center justify-content-center bg-mdc-gray p-3">
+							<p class="text-bold text-lg m-0">Sorry, there's nothing at this address.</p>
+						</div>
+					</div>
+				</div>
+			</LayoutView>
+		</NotFound>
+	</Router>
+</CascadingAuthenticationState>

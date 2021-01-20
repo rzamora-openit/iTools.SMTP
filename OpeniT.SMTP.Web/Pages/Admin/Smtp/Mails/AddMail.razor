@@ -1,0 +1,69 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Admin
+
+@if (this.isBusy || ManageMails.IsBusy)
+{
+	<div class="@(Shown ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
+		<MatProgressBar Class="position-sticky" Style="top: 0;" Indeterminate="true"></MatProgressBar>
+	</div>
+}
+<div class="@(Shown ? "animateFadeIn" : "d-none")" style="min-height: inherit; background-color: #eee;">
+	<section class="content-header position-sticky">
+		<div class="container-fluid d-flex align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
+			<div class="d-flex align-items-center">
+				<div class="d-flex align-items-center border-right pr-3">
+					<MatIcon Icon="library_add"></MatIcon>
+					<span class="text-lg text-bold ml-1">New Mail</span>
+				</div>
+				<div class="pl-3">
+					<span class="text-bold text-gray mb-0">Enter mail details and send</span>
+				</div>
+			</div>
+			<div class="text-right">
+				<NavLink href="@(ManageMails.CurrentFiltersUri)">
+					<MatButton Disabled="this.isBusy || ManageMails.IsBusy" Unelevated="true" Icon="chevron_left" Label="Back" Class="mdc-button-primary font-weight-normal mr-1"></MatButton>
+				</NavLink>
+				<MatButton Disabled="this.isBusy || ManageMails.IsBusy" Unelevated="true" OnClick="this.Save">
+					<i class="mdc-button__icon fas m-0 @(this.isBusy ? "fa-circle-notch fa-spin" : "fa-save")"></i> <span class="ml-2">Send</span>
+				</MatButton>
+			</div>
+		</div>
+	</section>
+	<section class="content p-responsive">
+		<div class="container-fluid p-0">
+			<div class="card card-default box-shadow-none mb-0">
+				<div class="card-header pl-responsive pr-responsive">
+					<h3 class="card-title">Mail Details</h3>
+				</div>
+				<div class="card-body p-responsive">
+					<EditForm EditContext="@editContext" class="m-0">
+						<CustomRemoteValidator @ref="@customRemoteValidator">
+							@if (context?.Model?.GetType() == typeof(SmtpMail))
+							{
+								var model = editContext.Model as SmtpMail;
+								<div class="form-group position-relative">
+									<MatTextField @bind-Value="@model.From.Address" Disabled="this.isBusy || ManageMails.IsBusy" Label="From *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.From.Address)" Class="validation-popover"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
+									<MatTextField Value="@mailTo" ValueChanged="((string value) => this.MailToChanged(value))" ValueExpression="() => mailTo" Disabled="this.isBusy || ManageMails.IsBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.To)" Class="validation-popover"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
+									<MatTextField Value="@mailCC" ValueChanged="((string value) => this.MailCcChanged(value))" ValueExpression="() => mailCC" Disabled="this.isBusy || ManageMails.IsBusy" Label="CC" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.CC)" Class="validation-popover"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
+									<MatTextField @bind-Value="@model.Subject" Disabled="this.isBusy || ManageMails.IsBusy" Label="Subject *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.Subject)" Class="validation-popover"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
+									<GrapesjsEditor @ref="grapesjsEditor" Disabled="this.isBusy || ManageMails.IsBusy">	</GrapesjsEditor>
+								</div>
+							}
+						</CustomRemoteValidator>
+					</EditForm>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>

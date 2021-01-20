@@ -1,0 +1,13 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared
+
+<div class="grapesjs-editor-container">
+	<div @ref="editorElement">
+		@ComponentValue
+	</div>
+	@if (!grapesjsIsInitialized || isBusy)
+	{
+		<div class="overlay">
+			<MatProgressBar Indeterminate="true" Style="position: absolute; top: 0;"></MatProgressBar>
+		</div>
+	}
+</div>

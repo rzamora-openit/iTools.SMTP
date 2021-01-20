@@ -1,0 +1,55 @@
+﻿@page "/"
+@namespace OpeniT.SMTP.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="x-ua-compatible" content="IE=11">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="msapplication-TileImage" content="/images/icons/cropped-openi11t_logo-270x270.png" />
+		<title>Open iT Customer Portal</title>
+		<base href="~/" />
+
+		<link rel="resource" type="application/l10n" href="locale/locale.properties">
+		<link rel="icon" href="images/icons/cropped-openit_logo-32x32.png" sizes="32x32" />
+		<link rel="icon" href="images/icons/cropped-openit_logo-192x192.png" sizes="192x192" />
+		<link rel="apple-touch-icon-precomposed" href="images/icons/cropped-openit_logo-180x180.png" />
+		<link rel="stylesheet" href="_content/MatBlazor/dist/matBlazor.css" type="text/css" />
+		<link rel="stylesheet" href="lib/helvetica-basic-latin/helvetica.css" type="text/css" />
+		<link rel="stylesheet" href="lib/font-awesome/css/all.min.css" type="text/css" />
+		<link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
+		<link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.css" type="text/css" />
+		<link rel="stylesheet" href="lib/grapesjs/css/grapes.min.css" type="text/css" />
+		<link rel="stylesheet" href="lib/grapesjs-preset-newsletter/style/material.css" type="text/css" />
+		<link rel="stylesheet" href="lib/grapesjs-preset-newsletter/style/tooltip.css" type="text/css" />
+		<link rel="stylesheet" href="lib/grapesjs-preset-newsletter/dist/grapesjs-preset-newsletter.min.css" type="text/css" />
+		<link rel="stylesheet" href="css/site.css" type="text/css" asp-append-version="true" />
+		<link rel="stylesheet" href="css/animations.css" type="text/css" asp-append-version="true" />
+		<link rel="stylesheet" href="css/admin-site.css" type="text/css" asp-append-version="true" />
+		<link rel="stylesheet" href="css/blazor-reconnect-modal-overrides.css" type="text/css" asp-append-version="true" />
+		<link rel="stylesheet" href="css/mat-blazor-overrides.css" type="text/css" asp-append-version="true" />
+		<link rel="stylesheet" href="css/grapesjs-editor-overrides.css" type="text/css" asp-append-version="true" />
+	</head>
+	<body class="mdc-custom-scrollbars">
+		<component type="typeof(AdminApp)" render-mode="Server" />
+
+		<script src="lib/jquery/jquery.js" type="text/javascript"></script>
+		<script src="lib/popper.js/umd/popper.js" type="text/javascript"></script>
+		<script src="lib/bootstrap/dist/js/bootstrap.bundle.js" type="text/javascript"></script>
+		<script src="lib/blazor.polyfill/blazor.polyfill.js" type="text/javascript"></script>
+		<script src="lib/grapesjs/grapes.min.js" type="text/javascript"></script>
+		<script src="lib/grapesjs-custom-code/dist/grapesjs-custom-code.min.js" type="text/javascript"></script>
+		<script src="lib/grapesjs-preset-newsletter/dist/grapesjs-preset-newsletter.min.js" type="text/javascript"></script>
+		<script src="_framework/blazor.server.js" type="text/javascript"></script>
+		<script src="_content/MatBlazor/dist/matBlazor.js" type="text/javascript"></script>
+		<script src="~/js/grapesjs-functions.js" type="text/javascript" asp-append-version="true"></script>
+		<script src="~/js/admin-site.js" type="text/javascript" asp-append-version="true"></script>
+		<script src="~/js/site.js" type="text/javascript" asp-append-version="true"></script>
+		<script src="~/js/input-file-overrides.js" type="text/javascript" asp-append-version="true"></script>
+	</body>
+</html>

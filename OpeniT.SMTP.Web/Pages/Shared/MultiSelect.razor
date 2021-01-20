@@ -1,0 +1,75 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared
+@typeparam TValue
+
+<div class="mdc-multi-select" data-toggle="tooltip" title="@(SelectedItems?.Any() == true ? string.Join(", ", SelectedItems?.Select((ValueSelector) ?? (i => string.Empty)) ?? Enumerable.Empty<string>()) : " ")">
+	<Dropdown MenuOverlayScrollbarsEnabled="true" MenuStyle="position: absolute;">
+		<ButtonContent>
+			<MatTextField @bind-Value="selectedItemsString" ReadOnly="true" Id="@InputId" Label="@InputLabel" Icon="@(InputIcon != null ? InputIcon : "arrow_drop_down")" IconTrailing="true" Class="@InputClass" Style="@InputStyle" PlaceHolder="@InputPlaceHolder" Disabled="Disabled"></MatTextField>
+		</ButtonContent>
+		<MenuContent>
+			<MatList Class="d-none"></MatList> @*This prevents menu from closing on click*@
+			<div class="position-sticky" style="top: 0; z-index: 2;">
+				<div class="mdc-text-field-clear-group">
+					<MatTextField Class="hide-validation-line full-width dense--5 bg-white m-0" Value="@searchValue" ValueChanged="@((string e) => this.SearchChanged(e))" ValueExpression="() => searchValue" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Icon="search"></MatTextField>
+					@if (!string.IsNullOrWhiteSpace(searchValue) || !string.IsNullOrWhiteSpace(_searchValue))
+					{
+						<MatIcon Class="clear-button" Icon="close" @onclick="() => this.SearchChanged(null)"></MatIcon>
+					}
+				</div>
+			</div>
+			<MatList Class="mdc-multi-select-mat-list" style="min-width: 250px; margin: 0; overflow-x: hidden !important;">
+				@if (Enumerable.Any(filteredItems ?? Enumerable.Empty<TValue>()))
+				{
+					@if (string.IsNullOrWhiteSpace(searchValue))
+					{
+						bool? isAllChecked = false;
+						if (SelectedItems?.Count == Items?.Count())
+						{
+							isAllChecked = true;
+						}
+						else if (SelectedItems?.Any() == true)
+						{
+							isAllChecked = null;
+						}
+						<MatListItem Class="h-auto pl-2 pr-2 pt-1 pb-1" OnClick="e => this.CheckAll(isAllChecked)">
+							<MatCheckbox Class="ml-n1" Indeterminate="true" Value="@isAllChecked" ValueExpression="() => isAllChecked"></MatCheckbox>
+							<span class="text-nowrap">Select All</span>
+						</MatListItem>
+					}
+
+					@foreach (var item in filteredItems ?? Enumerable.Empty<TValue>())
+					{
+						bool isChecked = Enumerable.Contains(SelectedItems ?? Enumerable.Empty<TValue>(), item);
+						<MatListItem Class="h-auto pl-2 pr-2 pt-1 pb-1" OnClick="e => this.CheckedChanged(item, isChecked)">
+							<MatCheckbox Class="ml-n1" Value="@isChecked" ValueExpression="() => isChecked"></MatCheckbox>
+							@if (ItemTemplate == null)
+							{
+								<span class="text-nowrap">@ValueSelector.Invoke(item)</span>
+							}
+							else
+							{
+								@ItemTemplate(item)
+							}
+						</MatListItem>
+					}
+				}
+				else
+				{
+					<div class="pt-2 pb-2" style="padding-left: 20px; padding-right: 20px;">
+						@if (!string.IsNullOrWhiteSpace(searchValue))
+						{
+							<p class="text-sm text-break mb-0">Your search: @searchValue did not match any selection.</p>
+						}
+						else
+						{
+							<p class="text-sm text-break mb-0">No selections.</p>
+						}
+					</div>
+				}
+			</MatList>
+			<div class="position-sticky border-top border-dark bg-white pt-1 pb-1" style="bottom: 0; z-index: 2; padding-left: 20px; padding-right: 20px;">
+				<span class="text-sm">@((SelectedItems?.Count()).GetValueOrDefault()) out of @((Items?.Count()).GetValueOrDefault()) item(s) selected</span>
+			</div>
+		</MenuContent>
+	</Dropdown>
+</div>

@@ -1,0 +1,22 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+@typeparam TValue
+
+<div class="@(!messages.Any() || !CurrentEditContext.IsModified(_fieldIdentifier) ? "invisible" : string.Empty) @(MessageTemplate == null ? $"validation-popover {Class}" : Class)" style="@Style" @ref="@Ref">
+	@if (MessageTemplate == null)
+	{
+		<div class="validation-popover-content">
+			@foreach (var message in messages ?? Enumerable.Empty<string>())
+			{
+				<span class="d-flex align-items-center pt-1 pb-1"><MatIcon Icon="error"></MatIcon><span class="ml-2">@message</span></span>
+			}
+			<MatIconButton Class="validation-popover-close-button" Icon="cancel" OnClick="() => CurrentEditContext?.MarkAsUnmodified(_fieldIdentifier)"></MatIconButton>
+		</div>
+	}
+	else
+	{
+		@foreach (var message in messages ?? Enumerable.Empty<string>())
+		{
+			@MessageTemplate(message)
+		}
+	}
+</div>

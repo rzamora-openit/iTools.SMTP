@@ -1,0 +1,41 @@
+/**
+ * Failed to minify the file using clean-css v4.2.3. Serving the original version.
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+@font-face{
+	font-family:"Helvetica-Thin";
+	src:url("Thin/helvetica-thin-webfont.eot?#iefix");
+	src:url("Thin/helvetica-thin-webfont.eot?#iefix") format("eot"),
+		url("Thin/helvetica-thin-webfont.woff") format("woff"),
+		url("Thin/helvetica-thin-webfont.ttf") format("truetype"),
+		url("Thin/helvetica-thin-webfont.svg#Helvetica-Thin") format("svg");
+}
+
+@font-face{
+	font-family:"Helvetica-Light";
+	src:url("Light/helvetica-light-webfont.eot?#iefix");
+	src:url("Light/helvetica-light-webfont.eot?#iefix") format("eot"),
+		url("Light/helvetica-light-webfont.woff") format("woff"),
+		url("Light/helvetica-light-webfont.ttf") format("truetype"),
+		url("Light/helvetica-light-webfont.svg#Helvetica-Light") format("svg");
+}
+
+@font-face{
+	font-family:"Helvetica-Bold";
+	src:url("Bold/helvetica-bold-webfont.eot?#iefix");
+	src:url("Bold/helvetica-bold-webfont.eot?#iefix") format("eot"),
+		url("Bold/helvetica-bold-webfont.woff2") format("woff2"),
+		url("Bold/helvetica-bold-webfont.woff") format("woff"),
+		url("Bold/helvetica-bold-webfont.ttf") format("truetype"),
+		url("Bold/helvetica-bold-webfont.svg#Helvetica-Bold") format("svg");
+}
+
+@font-face{
+	font-family:"Helvetica-Black";
+	src:url("Black/helvetica-black-webfont.eot?#iefix");
+	src:url("Black/helvetica-black-webfont.eot?#iefix") format("eot"),
+		url("Black/helvetica-black-webfont.woff2") format("woff2"),
+		url("Black/helvetica-black-webfont.woff") format("woff"),
+		url("Black/helvetica-black-webfont.ttf") format("truetype"),
+		url("Black/helvetica-black-webfont.svg#Helvetica-Black") format("svg");
+}*/

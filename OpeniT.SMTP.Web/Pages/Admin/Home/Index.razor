@@ -1,0 +1,41 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Admin
+
+<div class="animateFadeIn">
+	<section class="content-header position-sticky">
+		<div class="container-fluid d-flex align-items-center justify-content-between pl-responsive pr-responsive" style="height: 57px;">
+			<div class="d-flex align-items-center">
+				<div class="d-flex align-items-center">
+					<MatIcon Icon="apps"></MatIcon>
+					<span class="text-lg text-bold ml-1">Service Catalog</span>
+				</div>
+			</div>
+		</div>
+	</section>
+	<section class="content p-0">
+		<div class="container-fluid p-0">
+			<div class="d-flex flex-wrap pt-4 pb-4 pr-responsive">
+				@foreach (var service in siteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type != ServiceGroupType.ControlSidebar)?.SelectMany(sg => sg?.Services)?.Where(s => !string.Equals(s?.Title, "Home")) ?? Enumerable.Empty<ServiceViewModel>())
+				{
+					<div class="pt-3 pb-3 pl-responsive align-self-stretch flex-basis-33">
+						<div class="card border h-100 mb-0">
+							<div class="card-header m-0 pl-3 pr-3 border-0 d-flex align-items-end">
+								<span class="rounded mt-n4 d-flex align-items-center justify-content-center bg-mdc-primary mat-elevation-z3 wh50x50"><MatIcon Icon="@service.Icon" Style="font-size: 2rem"></MatIcon></span>
+								<h3 class="text-lg ml-2 mb-0">@service.Title</h3>
+							</div>
+							<div class="card-body pl-3 pr-3 pt-0 pb-2">
+								@*@service.Description*@
+								<span class="text-sm text-gray">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</span>
+							</div>
+							<div class="card-footer pr-3 pl-3 pt-0 pb-1 border-top rounded-bottom">
+								<div class="d-flex align-items-center justify-content-between mt-2 mb-1">
+									<MatButton>Learn more</MatButton>
+									<MatButton Link="@service.Uri" Class="ml-1">Manage @service.Title</MatButton>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</section>
+</div>

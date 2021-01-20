@@ -1,0 +1,52 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared
+@inherits BaseMatPaginator
+
+<div class="@ClassMapper.AsString()">
+	<div class="mat-paginator-container p-0">
+		@if (!Summarized)
+		{
+			<div class="mat-paginator-page-size align-items-center">
+				<div class="text-gray text-sm border-right pr-3">Showing @((PageSize * (PageIndex + 1)) - PageSize + 1 > Length ? Length : (PageSize * (PageIndex + 1)) - PageSize + 1) - @(PageSize * (PageIndex + 1) > Length ? Length : PageSize * (PageIndex + 1)) out of @Length</div>
+				<div class="mat-paginator-page-size-label text-gray text-sm pl-3">@Label</div>
+				<Dropdown>
+					<ButtonContent>
+						<MatButton Style="height: 30px;">
+							<span class="mdc-button__label">@(PageSize == int.MaxValue ? "All" : PageSize.ToString())</span>
+							<i class="fas fa-caret-down ml-3"></i>
+						</MatButton>
+					</ButtonContent>
+					<MenuContent>
+						<MatList>
+							@foreach (var pageSizeOption in PageSizeOptions)
+							{
+								<MatListItem Class="@(pageSizeOption.Value == PageSize ? "active" : string.Empty)" OnClick="async e => await PageSizeChangedHandler(pageSizeOption.Value)">@(pageSizeOption.Value == int.MaxValue ? "All" : pageSizeOption.Value.ToString())</MatListItem>
+							}
+						</MatList>
+					</MenuContent>
+				</Dropdown>
+			</div>
+		}
+
+		<div class="mat-paginator-range-actions">
+			<div class="mat-paginator-range-buttons d-flex align-items-center">
+				<MatIconButton Class="mdc-icon-button-primary" Icon="first_page" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.First, PageSize)) Disabled=@(PageIndex <= 0)></MatIconButton>
+				<MatIconButton Class="mdc-icon-button-primary ml-1" Icon="navigate_before" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.Previous, PageSize)) Disabled=@(PageIndex <= 0)></MatIconButton>
+				@if (Summarized)
+				{
+					<div class="d-inline-block pl-2 pr-2"><span class="text-mdc-primary">@(TotalPages > 0 ? PageIndex + 1 : 0)</span> / <span class="text-gray">@TotalPages</span></div>
+				}
+				else
+				{
+					var pagingRange = GetPagingRange(PageIndex + 1, TotalPages);
+					@foreach (var pageNumber in pagingRange)
+					{
+						<MatIconButton Icon="@pageNumber.ToString()" Class="mdc-icon-button-primary mdc-icon-button-text ml-1" OnClick=@(async () => await NavigateTo(pageNumber - 1)) active="@((pageNumber == PageIndex + 1).ToString())"></MatIconButton>
+					}
+				}
+				<MatIconButton Class="mdc-icon-button-primary ml-1" Icon="navigate_next" OnClick="@(async () => await NavigateToPage(MatPaginatorAction.Next, PageSize))" Disabled="@(TotalPages - PageIndex <= 1)"></MatIconButton>
+				<MatIconButton Class="mdc-icon-button-primary ml-1" Icon="last_page" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.Last, PageSize)) Disabled=@(TotalPages - PageIndex <= 1)></MatIconButton>
+			</div>
+		</div>
+
+	</div>
+</div>

@@ -1,0 +1,429 @@
+﻿.field-wrapper {
+	position: relative;
+	width: 100%;
+}
+
+.field-wrapper input {
+	box-sizing: content-box;
+	border: 1px solid #404040;
+	/* width = 100% - padding * 2 - border*/
+	width: calc(100% - 30px - 2px);
+	padding: 15px;
+	border-radius: 4px;
+}
+
+.field-wrapper .field-placeholder {
+	font-size: 16px;
+	position: absolute;
+	/* background: #fff; */
+	bottom: 17px;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	color: rgba(64, 64, 64, 0.5);
+	padding: 0 8px;
+	-webkit-transition: transform 150ms cubic-bezier(0.4,0,0.2,1), opacity 150ms cubic-bezier(0.4,0,0.2,1);
+	transition: transform 150ms cubic-bezier(0.4,0,0.2,1), opacity 150ms cubic-bezier(0.4,0,0.2,1);
+	z-index: 1;
+	cursor: text;
+	text-align: left;
+}
+
+.field-wrapper .field-placeholder span {
+	background: #ffffff;
+	padding: 0px 8px;
+}
+
+.field-wrapper input:not([disabled]):focus {
+	outline: none !important;
+	/* width = 100% - padding * 2 - border*/
+	width: calc(100% - 28px - 4px) !important;
+	padding: 14px !important;
+	border: 2px solid #FFC000;
+}
+
+.field-wrapper input:not([disabled]):focus ~ .field-placeholder {
+	font-weight: bold;
+	color: #FFC000;
+}
+
+.field-wrapper input:not([disabled]):focus ~ .field-placeholder,
+.field-wrapper.hasValue input:not([disabled]) ~ .field-placeholder {
+	-webkit-transform: scale(.75) translateY(-38px) translateX(-17.5%);
+	transform: scale(.75) translateY(-38px) translateX(-17.5%);
+	font-weight: bold;
+	color: #FFC000;
+}
+
+.hasInput {
+/* width = 100% - padding * 2 - border * 2*/
+width: calc(100% - 28px - 4px) !important;
+padding: 14px !important;
+border: 2px solid #FFC000 !important;
+}
+
+.file-upload {
+	display: block;
+	text-align: center;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+
+	.file-upload .file-select {
+		display: block;
+		border: 2px solid #dce4ec;
+		color: #34495e;
+		cursor: pointer;
+		height: 40px;
+		line-height: 40px;
+		text-align: left;
+		background: #dce4ec;
+		overflow: hidden;
+		position: relative;
+	}
+
+		.file-upload .file-select .file-select-button {
+			background: #dce4ec;
+			padding: 0 10px;
+			display: inline-block;
+			height: 40px;
+			line-height: 40px;
+		}
+
+		.file-upload .file-select .file-select-name {
+			line-height: 40px;
+			display: inline-block;
+			padding: 0 10px;
+		}
+
+		.file-upload .file-select:hover {
+			background: #D33636;
+			border-color: #D33636;
+			transition: all .2s ease-in-out;
+			-moz-transition: all .2s ease-in-out;
+			-webkit-transition: all .2s ease-in-out;
+			-o-transition: all .2s ease-in-out;
+		}
+
+			.file-upload .file-select:hover .file-select-button {
+				background: #D33636;
+				color: #FFFFFF;
+				transition: all .2s ease-in-out;
+				-moz-transition: all .2s ease-in-out;
+				-webkit-transition: all .2s ease-in-out;
+				-o-transition: all .2s ease-in-out;
+			}
+
+.file-upload.active .file-select {
+	border-color: #3fa46a;
+	transition: all .2s ease-in-out;
+	-moz-transition: all .2s ease-in-out;
+	-webkit-transition: all .2s ease-in-out;
+	-o-transition: all .2s ease-in-out;
+}
+
+	.file-upload.active .file-select .file-select-button {
+		background: #3fa46a;
+		color: #FFFFFF;
+		transition: all .2s ease-in-out;
+		-moz-transition: all .2s ease-in-out;
+		-webkit-transition: all .2s ease-in-out;
+		-o-transition: all .2s ease-in-out;
+	}
+
+.file-upload .file-select input[type=file] {
+	z-index: 100;
+	cursor: pointer;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	top: 0;
+	left: 0;
+	opacity: 0;
+	filter: alpha(opacity=0);
+}
+
+.file-upload .file-select.file-select-disabled {
+	opacity: 0.65;
+}
+
+	.file-upload .file-select.file-select-disabled:hover {
+		cursor: default;
+		display: block;
+		border: 2px solid #dce4ec;
+		color: #34495e;
+		cursor: pointer;
+		height: 40px;
+		line-height: 40px;
+		margin-top: 5px;
+		text-align: left;
+		background: #FFFFFF;
+		overflow: hidden;
+		position: relative;
+	}
+
+.file-upload .file-select.file-select-disabled:hover .file-select-button {
+	background: #dce4ec;
+	color: #666666;
+	padding: 0 10px;
+	display: inline-block;
+	height: 40px;
+	line-height: 40px;
+}
+
+.file-upload .file-select.file-select-disabled:hover .file-select-name {
+	line-height: 40px;
+	display: inline-block;
+	padding: 0 10px;
+}
+
+
+.was-validated .form-control:invalid, .form-control.is-invalid {
+	z-index: 1;
+	padding-right: 2.25rem !important;
+}
+
+.was-validated .form-control:valid, .form-control.is-valid {
+	z-index: 2;
+	padding-right: 2.25rem !important;
+}
+
+.was-validated .form-control:invalid:hover, .form-control.is-invalid:hover {
+	border-color: #dc3545;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.was-validated .form-control:valid:hover, .form-control.is-valid:hover {
+	border-color: #28a745;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+input:focus:not(.is-invalid):not(.is-warning):not(.is-valid), textarea:focus:not(.is-invalid):not(.is-warning):not(.is-valid) {
+	border-color: #0080ff;
+}
+
+input.no-arrows::-webkit-outer-spin-button,
+input.no-arrows::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Firefox */
+input.no-arrows[type=number] {
+	-moz-appearance: textfield;
+}
+
+.form-control.form-control-sm.select2-choice .select2-chosen {
+	padding: 0.25rem 0.5rem;
+}
+.form-control.form-control-sm.select2-choice .select2-arrow {
+	top: -0.125rem;
+}
+.select2-search-choice-close {
+	background: none !important;
+}
+.select2-search-choice-close:before {
+	content: "\f00d";
+	font-family: "Font Awesome 5 Free";
+	font-weight: 900;
+	font-size: 10px;
+}
+
+.select2-container-multi .select2-search-choice-close {
+	left: auto;
+	right: 0;
+	color: #fff;
+	opacity: 0.75;
+}
+.select2-container-multi .select2-search-choice-close:hover {
+	opacity: 1;
+}
+
+.select2-container.select2-container-multi.form-control {
+	min-height: calc(2.25rem + 2px);
+}
+.select2-container .select2-choice {
+	height: 100%;
+	line-height: 1.5 !important;
+}
+.select2-container-multi .select2-choices, .select2-container-multi .select2-choices .select2-search-field, .select2-container-multi .select2-choices .select2-search-field input {
+	min-height: calc(2.25rem + 2px);
+	width: 100% !important;
+}
+.select2-container-active .select2-choice, .select2-container-multi.select2-container-active .select2-choices {
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+.select2-dropdown-open .select2-choice, .select2-container-multi.select2-dropdown-open .select2-choices {
+	border-color: #0080ff;
+	outline: 0;
+	border-bottom-right-radius: 0 !important;
+	border-bottom-left-radius: 0 !important;
+}
+
+.select2-choice > span:first-child, .select2-chosen, .select2-container .select2-choices .select2-search-field input {
+	height: 100%;
+}
+
+.select2-container-multi .select2-choices .select2-search-field {
+	display: none;
+}
+.select2-container-multi .select2-choices .select2-choice {
+	border-color: transparent;
+}
+
+.select2-container.select2-container-multi.form-control.form-control-sm {
+	min-height: calc(1.8125rem + 2px);
+}
+.select2-container-multi.form-control.form-control-sm .select2-choices, .select2-container-multi .select2-choices .select2-search-field, .select2-container-multi .select2-choices .select2-search-field input {
+	min-height: calc(1.8125rem + 2px);
+}
+
+.select2-container-multi .select2-choices .select2-search-choice {
+	background-color: #0080ff;
+	color: #ffffff;
+	padding: 10px;
+	margin: 7px 3px 0 3px;
+	width: calc(23% + 3px);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.select2-drop-active {
+	border: 1px solid #0080ff;
+}
+.select2-search {
+	margin-top: 4px;
+}
+.select2-search input {
+	border-radius: 0;
+	border-color: #ced4da;
+}
+.select2-results .select2-highlighted {
+	background-color: #0080ff;
+}
+.transparent-highlight.select2-results .select2-highlighted {
+	background-color: transparent;
+	color: #343a40;
+}
+.transparent-highlight.select2-results .select2-disabled {
+	background-color: #0080ff;
+	color: #ffffff;
+}
+.transparent-highlight.select2-results .ui-select-choices-row:not(.select2-disabled):hover {
+	background-color: #f4f4f4;
+}
+
+.was-validated .form-control.select2-choice:valid, .form-control.is-valid.select2-choice {
+	border-color: #28a745 !important;
+	background-position: center right calc(.75em + 0.1875rem);
+}
+.was-validated .form-control.select2-choice:invalid, .form-control.is-invalid.select2-choice {
+	border-color: #dc3545 !important;
+	background-position: center right calc(.75em + 0.1875rem);
+}
+
+
+input[type=file], /* FF, IE7+, chrome (except button) */
+input[type=file]::-webkit-file-upload-button { /* chromes and blink button */
+	cursor: pointer;
+}
+.custom-file-drop {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 1;
+	height: 100%;
+	padding: 0.375rem 0.75rem;
+	line-height: 1.5;
+	background-color: #f8f9fa;
+	box-shadow: rgba(0, 0, 0, 0.125) 0px 0px 1px 0px, rgba(0, 0, 0, 0.2) 0px 1px 3px 0px;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.custom-file .custom-file-input:hover ~ .custom-file-drop, .custom-file-drop.dragEnter {
+	background-color: #e9ecef;
+}
+a.form-control:hover {
+	cursor: pointer;
+}
+/*for dashed border*/
+.custom-file-drop:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(90deg, #babec5 100%, transparent 100%) top left no-repeat, linear-gradient(90deg, transparent calc(6px / 2), #babec5 calc(6px / 2), #babec5 calc(6px / 2 + 6px), transparent calc(6px / 2 + 6px)) top center repeat-x, linear-gradient(90deg, #babec5 100%, transparent 100%) top right no-repeat, linear-gradient(0deg, #babec5 100%, transparent 100%) top left no-repeat, linear-gradient(0deg, transparent calc(6px / 2), #babec5 calc(6px / 2), #babec5 calc(6px / 2 + 6px), transparent calc(6px / 2 + 6px)) center left repeat-y, linear-gradient(0deg, #babec5 100%, transparent 100%) bottom left no-repeat, linear-gradient(90deg, #babec5 100%, transparent 100%) bottom left no-repeat, linear-gradient(90deg, transparent calc(6px / 2), #babec5 calc(6px / 2), #babec5 calc(6px / 2 + 6px), transparent calc(6px / 2 + 6px)) bottom center repeat-x, linear-gradient(90deg, #babec5 100%, transparent 100%) bottom right no-repeat, linear-gradient(0deg, #babec5 100%, transparent 100%) top right no-repeat, linear-gradient(0deg, transparent calc(6px / 2), #babec5 calc(6px / 2), #babec5 calc(6px / 2 + 6px), transparent calc(6px / 2 + 6px)) center right repeat-y, linear-gradient(0deg, #babec5 100%, transparent 100%) bottom right no-repeat;
+	background-size: 6px 1px, calc(6px + 6px) 1px, 6px 1px, 1px 6px, 1px calc(6px + 6px), 1px 6px;
+}
+.custom-file .custom-file-icon {
+	position: absolute;
+	margin: 0;
+	text-align: center;
+	transition: 0.15s all;
+}
+
+.custom-file-input, .custom-file-label {
+	border: 1px dashed #ced4da;
+	color: #6c757d !important;
+}
+.custom-file-label::after {
+	font-family: "Font Awesome 5 Free";
+	font-weight: 900;
+	content: '\f07c' !important;
+	transition: 0.25s all;
+}
+.custom-file-sm {
+	height: calc(1.8125rem + 2px) !important;
+	padding: .25rem .5rem;
+	font-size: .875rem;
+	line-height: 1.5;
+	border-radius: .2rem;
+}
+.custom-file-sm .custom-file-input {
+	height: 100%;
+}
+.custom-file-sm .custom-file-label, .custom-file-sm .custom-file-label::after {
+	padding: .25rem .5rem;
+	height: 100%;
+}
+.custom-file .form-control:hover:not(.is-invalid):not(.is-warning):not(.is-valid),
+.custom-file .custom-select:hover,
+.custom-file .custom-control-input:hover:not(:checked) ~ .custom-control-label::before,
+.custom-file .custom-file-input:hover ~ .custom-file-label {
+	border: 1px dashed #0080ff;
+	color: #343a40;
+}
+.custom-file .form-control:hover:not(.is-invalid):not(.is-warning):not(.is-valid),
+.custom-file .custom-select:hover,
+.custom-file .custom-control-input:hover:not(:checked) ~ .custom-control-label::before,
+.custom-file .custom-file-input:hover ~ .custom-file-label:after {
+	background-color: #0080ff;
+	color: #ffffff;
+}
+.custom-file .form-control:hover:not(.is-invalid):not(.is-warning):not(.is-valid),
+.custom-file .custom-select:hover,
+.custom-file .custom-control-input:hover:not(:checked) ~ .custom-file-icon,
+.custom-file .custom-file-input:hover ~ .custom-file-icon {
+	color: #0080ff;
+}
+.custom-file .form-control:active:not(.is-invalid):not(.is-warning):not(.is-valid),
+.custom-file .custom-select:active,
+.custom-file .custom-control-input:active:not(:checked) ~ .custom-control-label::before,
+.custom-file .custom-file-input:active ~ .custom-file-label:after {
+	background-color: #0080ff;
+	color: #ffffff;
+}
+.custom-file .form-control:active:not(.is-invalid):not(.is-warning):not(.is-valid),
+.custom-file .custom-select:active,
+.custom-file .custom-control-input:active:not(:checked) ~ .custom-control-icon,
+.custom-file .custom-file-input:active ~ .custom-file-icon {
+	color: #0080ff;
+}

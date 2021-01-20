@@ -1,0 +1,45 @@
+﻿.grapesjs-editor-container {
+	width: 100%;
+	min-height: 900px;
+	border: 2px solid #f5f5f5;
+	overflow: hidden;
+	position: relative;
+}
+
+.gjs-block:hover, .gjs-btnt.gjs-pn-active, .gjs-color-active, .gjs-pn-btn.gjs-pn-active, .gjs-pn-btn:active, .gjs-pn-btn:hover,
+.gjs-color-warn, .gjs-four-color {
+	color: var(--mdc-theme-primary, #6200ee);
+}
+
+.gjs-pn-devices-c {
+	padding: 3px;
+}
+
+.gjs-one-bg {
+	background-color: #f5f5f5;
+}
+
+.gjs-three-bg, .gjs-clm-tags .gjs-clm-tag, .gjs-off-prv {
+	background-color: var(--mdc-theme-primary, #3b97e3);
+	color: #ffffff;
+}
+
+.gjs-off-prv {
+	box-shadow: 0 0 5px rgba(0,0,0,.2);
+}
+
+.gjs-two-color, .gjs-pn-btn {
+	color: #343a40;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+	box-shadow: none;
+}
+
+.gjs-editor-cont *[class^="fa-"]:before, .gjs-editor-cont *[class*=' fa-']:before {
+	font-family: FontAwesome;
+}
+
+.gjs-mdl-container {
+	z-index: 101;
+}

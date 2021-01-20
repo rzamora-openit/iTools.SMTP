@@ -1,0 +1,138 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+
+<nav class="main-header navbar navbar-expand navbar-white navbar-light mdc-dark-theme border-bottom @(showControls ? "controls-is-open" : string.Empty)">
+	<ul class="align-self-stretch navbar-nav">
+		<li class="nav-item">
+			<MatButton Class="menu-button rounded-0 pl-responsive pr-responsive h-100" OnClick="this.ToggleSideBar" data-toggle="tooltip" data-placement="bottom" title="@(siteCascadingValue.SidebarIsOpen ? "Unpin menu" : "Pin menu")">
+				<span class="material-icons mdc-button__icon text-lg m-0">menu</span>
+			</MatButton>
+		</li>
+	</ul>
+	<ul class="align-self-stretch navbar-nav text-nowrap">
+		<li class="nav-item">
+			<NavLink class="h-100" href="/admin">
+				<MatButton Class="rounded-0 pl-responsive pr-responsive h-100">
+					<img src="/images/logo.png" class="navbar-img">
+				</MatButton>
+			</NavLink>
+		</li>
+		@if (!isXSmallScreen)
+		{
+			<li class="nav-item flex-grow-1 @(searchIsOpen ? "d-none" : string.Empty)">
+				<MatButton Class="rounded-0 pl-responsive pr-responsive h-100 w-100" OnClick="this.ToggleSearchIsOpen">
+					<span class="material-icons mdc-button__icon text-lg m-0">search</span>
+				</MatButton>
+			</li>
+		}
+	</ul>
+
+	<form class="form-inline flex-nowrap flex-grow-1 align-self-stretch @(!searchIsOpen ? "d-none" : string.Empty)" style="@(isXSmallScreen ? "position: absolute; width: 100%; top: 0; height: calc(3.5rem + 1px); background: #ffffff; border-bottom: 1px solid #dee2e6; z-index: 3;" : string.Empty)">
+		@{ 
+			var services = siteCascadingValue?.ServicesGroups?.SelectMany(sg => sg?.Services ?? Enumerable.Empty<ServiceViewModel>()) ?? Enumerable.Empty<ServiceViewModel>();
+			<MatAutocompleteList @ref="matAutocompleteList" Items="services" Label="Search accross the site" CustomStringSelector="@(i => i?.Title)" Value="@selectedService" ValueChanged="@((ServiceViewModel value) => this.SearchValueChange(value))" Icon="find_in_page" FullWidth="true" NumberOfElementsInPopup="@services.Count()">
+				<ItemTemplate>
+					<div class="d-flex align-items-center w-100 border-top">
+						<div class="d-flex align-items-center justify-content-center" style="width: 2rem; height: 100%">
+							<MatIcon Style="font-size: 2rem">@context.Icon</MatIcon>
+						</div>
+						<div class="d-flex flex-column flex-grow-1 justify-content-start text-left pl-3 pt-3 pb-3">
+							<h4 class="text-lg mb-0">@context.Title</h4>
+							<p class="m-0">@context.Description</p>
+						</div>
+					</div>
+				</ItemTemplate>
+			</MatAutocompleteList>
+		}
+		<MatButton Type="button" Class="rounded-0 pl-responsive pr-responsive h-100" OnClick="this.ToggleSearchIsOpen">
+			<span class="material-icons mdc-button__icon text-lg m-0">close</span>
+		</MatButton>
+	</form>
+
+	@if (isXSmallScreen)
+	{
+		<ul class="@(searchIsOpen ? "d-none" : "align-self-stretch navbar-nav ml-auto")">
+			<li class="nav-item flex-grow-1">
+				<MatButton Class="rounded-0 pl-responsive pr-responsive h-100 w-100" OnClick="this.ToggleSearchIsOpen">
+					<span class="material-icons mdc-button__icon text-lg m-0">search</span>
+				</MatButton>
+			</li>
+			<li class="nav-item">
+				<MatButton Class="rounded-0 pl-responsive pr-responsive h-100" OnClick="this.ToggleControls">
+					<span class="material-icons mdc-button__icon text-lg m-0">drag_indicator</span>
+				</MatButton>
+			</li>
+		</ul>
+		<div class="@(searchIsOpen || !showControls ? "d-none" : "d-flex align-items-center align-self-stretch justify-content-center")" style="position: absolute; width: 100%; top: 0; height: calc(3.5rem + 1px); background: #ffffff; border-bottom: 1px solid #dee2e6; z-index: 2;">
+			@{
+				RenderControls();
+			}
+		</div>
+	}
+	else
+	{
+		<div class="@(searchIsOpen ? "d-none" : "d-flex d-flex align-items-center align-self-stretch justify-content-center ml-auto")">
+			@{
+				RenderControls();
+			}
+		</div>
+	}
+</nav>
+
+@{
+	void RenderControls()
+	{
+		<ul class="@(searchIsOpen ? "d-none" : "align-self-stretch navbar-nav ml-auto justify-content-between flex-basis-100")">
+			<li class="nav-item flex-grow-1">
+				<Dropdown Style="height: 100%;" ButtonStyle="height: 100%;" MenuStyle="width: 468px; position: absolute; z-index: 99999;" MenuOverlayScrollbarsEnabled="true">
+					<ButtonContent>
+						<MatButton Class="rounded-0 pl-responsive pr-responsive h-100 w-100" data-toggle="tooltip" data-placement="bottom" title="Pick theme">
+							<span class="material-icons mdc-button__icon text-lg m-0">invert_colors</span>
+						</MatButton>
+					</ButtonContent>
+					<MenuContent>
+						<MatList Class="d-none"></MatList>
+						<div class="d-flex align-items-center flex-wrap">
+							<MatTextField Label="Input Primary Color" Value="siteCascadingValue.Theme.Primary" ValueChanged="@(async (string themePrimary) => await this.SaveTheme(themePrimary))" Class="flex-basis-100 m-0"></MatTextField>
+							@foreach (var color in MatThemeColors.Items.Values)
+							{
+								@foreach (var shadow in color.Shadows.Values.Where(s => this.ValidateColor(s.Value)))
+								{
+									<div class="@($"col custom-mat-blazor-theme-color-item {(siteCascadingValue.Theme.Primary == shadow.Value ? "mat-elevation-z10" : string.Empty)}")" style="@($"background: {shadow.Value};")" @onclick="async () => await this.SaveTheme(shadow.Value)">
+										@if (siteCascadingValue.Theme.Primary == shadow.Value)
+										{
+											<MatIcon Class="animateFadeIn">check_circle</MatIcon>
+										}
+									</div>
+								}
+							}
+						</div>
+					</MenuContent>
+				</Dropdown>
+			</li>
+			<li class="nav-item flex-grow-1">
+				<Dropdown Style="height: 100%;" ButtonStyle="height: 100%;" MenuStyle="width: 150px; position: absolute; z-index: 99999;" MenuOverlayScrollbarsEnabled="true">
+					<ButtonContent>
+						<MatButton Class="rounded-0 pl-responsive pr-responsive h-100 w-100" data-toggle="tooltip" data-placement="bottom" title="Manage Account">
+							<span class="material-icons mdc-button__icon text-lg m-0">account_circle</span>
+						</MatButton>
+					</ButtonContent>
+					<MenuContent>
+						<MatList Class="accent-dark">
+							<NavLink href="Account/Logout">
+								<MatListItem>Logout</MatListItem>
+							</NavLink>
+						</MatList>
+					</MenuContent>
+				</Dropdown>
+			</li>
+			@if (isXSmallScreen)
+			{
+				<li class="nav-item flex-grow-1">
+					<MatButton Class="rounded-0 pl-responsive pr-responsive h-100 w-100" OnClick="this.ToggleControls">
+						<span class="material-icons mdc-button__icon text-lg m-0">close</span>
+					</MatButton>
+				</li>
+			}
+		</ul>
+	}
+}

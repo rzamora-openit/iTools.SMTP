@@ -1,0 +1,83 @@
+#components-reconnect-modal {
+	z-index: 999999999 !important;
+	background-color: rgba(255, 255, 255, 0.8) !important;
+	opacity: 1 !important;
+	display: flex !important;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+#components-reconnect-modal .btn-link,
+#components-reconnect-modal a:not(.dropdown-item):not(.btn) {
+	color: var(--mdc-theme-primary, #cd172d) !important;
+}
+
+#components-reconnect-modal .btn-link:hover,
+#components-reconnect-modal a:not(.dropdown-item):not(.btn):hover {
+	color: #a71d2a;
+}
+
+#components-reconnect-modal .custom-control-input:checked ~ .custom-control-label::before {
+	background: var(--mdc-theme-primary, #cd172d) !important;
+	border-color: #a71d2a;
+}
+
+#components-reconnect-modal .form-control:focus:not(.is-invalid):not(.is-warning):not(.is-valid),
+#components-reconnect-modal .custom-select:focus,
+#components-reconnect-modal .custom-control-input:focus:not(:checked) ~ .custom-control-label::before,
+#components-reconnect-modal .custom-file-input:focus ~ .custom-file-label {
+	border-color: #a71d2a;
+}
+
+#components-reconnect-modal button {
+	display: inline-block;
+	font-weight: 400;
+	text-align: center;
+	vertical-align: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	border: 1px solid var(--mdc-theme-primary, #cd172d) !important;
+	padding: 0.375rem 0.75rem;
+	font-size: 1rem;
+	line-height: 1.5;
+	border-radius: 0.25rem;
+	transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+	color: #ffffff;
+	background-color: var(--mdc-theme-primary, #cd172d) !important;
+	box-shadow: none;
+}
+
+#components-reconnect-modal button:hover {
+	color: #ffffff;
+	background-color: #b81428;
+	border-color: #a41224;
+}
+
+#components-reconnect-modal button:focus, #components-reconnect-modal button.focus {
+	box-shadow: none, 0 0 0 0 rgba(225, 83, 97, 0.5);
+}
+
+#components-reconnect-modal button.disabled, #components-reconnect-modal button:disabled {
+	color: #ffffff;
+	background-color: var(--mdc-theme-primary, #cd172d) !important;
+	border-color: var(--mdc-theme-primary, #cd172d) !important;
+}
+
+#components-reconnect-modal button:not(:disabled):not(.disabled):active, #components-reconnect-modal button:not(:disabled):not(.disabled).active,
+.show > #components-reconnect-modal button.dropdown-toggle {
+	color: #ffffff;
+	background-color: #bd2130;
+	border-color: #b21f2d;
+}
+
+#components-reconnect-modal button:not(:disabled):not(.disabled):active:focus, #components-reconnect-modal button:not(:disabled):not(.disabled).active:focus,
+.show > #components-reconnect-modal button.dropdown-toggle:focus {
+	box-shadow: 0 0 0 0 rgba(225, 83, 97, 0.5);
+}
+
+#components-reconnect-modal div {
+	border-color: var(--mdc-theme-primary, #cd172d) rgb(243, 243, 243) rgb(243, 243, 243) !important;
+}

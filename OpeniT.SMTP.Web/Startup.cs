@@ -23,6 +23,7 @@ using System;
 using System.Net.Http;
 using Blazored.LocalStorage;
 using MatBlazor;
+using iTools.Utilities.JsRuntimeStream;
 
 namespace OpeniT.SMTP.Web
 {
@@ -52,6 +53,7 @@ namespace OpeniT.SMTP.Web
             services.AddScoped<SMTPMethods>();
             services.AddScoped<HttpClient>();
             services.AddScoped<ResizeListener>();
+            services.AddJsRuntimeStream();
 
             services.AddLogging();
             services.AddHttpContextAccessor();

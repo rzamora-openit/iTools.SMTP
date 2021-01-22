@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using iTools.Utilities.JsRuntimeStream;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -16,7 +17,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 	public partial class GrapesjsEditor : ComponentBase, IDisposable
 	{
 		[Inject] private IJSRuntime jsRuntime { get; set; }
-		[Inject] private IOptions<RemoteBlazorFileStreamOptions> Options { get; set; } = default!;
+		[Inject] private IJSRuntimeStream jsRuntimeStream { get; set; }
 
 		[CascadingParameter] EditContext CascadedEditContext { get; set; } = default!;
 
@@ -86,7 +87,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 		}
 
 
-		public async Task<string> GetValue(CancellationTokenSource cts)
+		public async Task<string> GetValue(CancellationTokenSource cts = default)
 		{
 			try
 			{
@@ -94,24 +95,13 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 				StateHasChanged();
 
 				var buffer = new byte[4 * 1096];
-				int bytesRead;
-				double totalRead = 0;
 				string value = string.Empty;
 
-				long streamLength = await jsRuntime.InvokeAsync<long>("window.GrapesjsFunctions.readValueLength", editorElement);
-				using (var stream = new RemoteBlazorFileStream(jsRuntime, streamLength, Options.Value, cts.Token,
-					"window.GrapesjsFunctions.readValueData", editorElement))
-				{
-					value = string.Empty;
+				using var stream = await jsRuntimeStream.InvokeReadStream("window.GrapesjsFunctions.getValue", cts.Token, editorElement);
+				using var memoryStream = new MemoryStream();
+				await stream.CopyToAsync(memoryStream);
 
-					while ((bytesRead = await stream.ReadAsync(buffer, cts.Token)) != 0)
-					{
-						totalRead += bytesRead;
-						value += System.Text.Encoding.UTF8.GetString(buffer);
-					}
-				}
-
-				return value;
+				return System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
 			}
 			catch (Exception ex)
 			{

@@ -6,7 +6,6 @@
         toImageFile: toImageFile,
         ensureArrayBufferReadyForSharedMemoryInterop: ensureArrayBufferReadyForSharedMemoryInterop,
         readFileData: readFileData,
-        fileToBlazorFile: fileToBlazorFile,
         getFileById: getFileById
     };
 
@@ -29,27 +28,23 @@
         });
         elem.addEventListener('change', function () {
             var fileList = Array.prototype.map.call(elem.files, function (file) {
-                return fileToBlazorFile(file);
+                var result = {
+                    id: ++_blazorInputFileNextFileId,
+                    lastModified: new Date(file.lastModified).toISOString(),
+                    name: file.name,
+                    size: file.size,
+                    contentType: file.type,
+                    readPromise: undefined,
+                    arrayBuffer: undefined
+                };
+                _blazorFilesById[result.id] = result;
+                // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
+                Object.defineProperty(result, 'blob', { value: file });
+                return result;
             });
             callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
         });
     }
-
-    function fileToBlazorFile(file) {
-        var result = {
-            id: ++_blazorInputFileNextFileId,
-            lastModified: new Date(file.lastModified).toISOString(),
-            name: file.name,
-            size: file.size,
-            contentType: file.type,
-            readPromise: undefined,
-            arrayBuffer: undefined
-        };
-        _blazorFilesById[result.id] = result;
-        // Attach the blob data itself as a non-enumerable property so it doesn't appear in the JSON.
-        Object.defineProperty(result, 'blob', { value: file });
-        return result;
-	}
 
     function toImageFile(elem, fileId, format, maxWidth, maxHeight) {
         return __awaiter(this, void 0, Promise, function* () {

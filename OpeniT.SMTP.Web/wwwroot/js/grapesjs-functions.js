@@ -4,6 +4,7 @@
             // Set up GrapesJS editor with the Newsletter plugin
             var editor = grapesjs.init({
                 storageManager: false,
+                inlineCss: true,
                 assetManager: {
                     upload: 0
                 },
@@ -30,7 +31,14 @@
 
             // Let's add in this demo the possibility to test our newsletters
             var pnm = editor.Panels;
-
+            
+            pnm.removeButton('options', 'gjs-open-import-template');
+            pnm.addButton('options', {
+                id: 'gjs-open-import-template',
+                className: 'fa fa-upload',
+                command: 'gjs-open-import-template',
+                attributes: { 'title': 'Import Template' }
+            });
             pnm.addButton('options', [{
                 id: 'undo',
                 className: 'fa fa-undo',
@@ -75,6 +83,11 @@
         setValue: function (editorElement, value) {
             editorElement.grapesjsEditorInstance.setComponents(value);
         },
+        getValue: function (editorElement) {
+            var value = editorElement.grapesjsEditorInstance.runCommand('gjs-get-inlined-html');
+
+            return editorElement.grapesjsEditorInstance.runCommand('gjs-get-inlined-html');
+        },
         readValueLength: function (editorElement) {
             var value = editorElement.grapesjsEditorInstance.runCommand('gjs-get-inlined-html');
             return (new TextEncoder().encode(value)).length;
@@ -96,6 +109,6 @@
         },
         destroy: function (editorElement) {
             editorElement.grapesjsEditorInstance.destroy();
-		}
+        }
     };
 })();

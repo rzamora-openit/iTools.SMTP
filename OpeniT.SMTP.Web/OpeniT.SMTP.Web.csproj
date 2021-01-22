@@ -20,9 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor-Server-JsRuntimeStream" Version="1.0.5" />
     <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
     <PackageReference Include="BlazorPro.BlazorSize" Version="3.1.0" />
     <PackageReference Include="Hangfire" Version="1.7.11" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.29" />
     <PackageReference Include="MatBlazor" Version="2.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.2" />
@@ -47,6 +49,10 @@
   <ItemGroup>
     <Folder Include="wwwroot\locale\" />
     <Folder Include="wwwroot\pages\blazored-texteditor\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\iTools.Utilities\JsRuntimeStream\JsRuntimeStream.csproj" />
   </ItemGroup>
 
 </Project>

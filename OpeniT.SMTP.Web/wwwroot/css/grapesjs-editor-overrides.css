@@ -43,3 +43,7 @@
 .gjs-mdl-container {
 	z-index: 101;
 }
+
+.gjs-mdl-dialog {
+	background-color: #ffffff;
+}

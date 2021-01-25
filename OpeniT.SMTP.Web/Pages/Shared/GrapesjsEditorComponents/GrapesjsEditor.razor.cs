@@ -70,8 +70,6 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 				{
 					if (!string.Equals(CurrentValue, Value))
 					{
-						CurrentValue = Value;
-
 						await this.SetValue(Value);
 					}
 
@@ -127,6 +125,8 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 			{
 				isBusy = true;
 				StateHasChanged();
+
+				CurrentValue = Value = value;
 
 				await JSIntropMethods.GrapesJsEditorSetValue(jsRuntime, editorElement, value);
 			}

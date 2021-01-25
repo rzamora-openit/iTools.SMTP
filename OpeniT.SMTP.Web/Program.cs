@@ -20,7 +20,6 @@ namespace OpeniT.SMTP.Web
 			Host.CreateDefaultBuilder(args)
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
-					webBuilder.UseUrls("http://mnl3003win:5000/");
 					webBuilder.UseKestrel(options =>
 					{
 						options.Limits.MaxRequestBodySize = int.MaxValue;

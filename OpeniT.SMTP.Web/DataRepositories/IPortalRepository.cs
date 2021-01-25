@@ -23,7 +23,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
         #region contextMethods
         void ResetAll();
         EntityState StateOf(object o);
-        TEntity CloneEntry<TEntity>(TEntity source, TEntity destination) where TEntity : class;
+        TEntity CloneEntry<TEntity>(TEntity source) where TEntity : class;
         Task ReloadEntry<TEntity>(TEntity entity) where TEntity : class;
         Task LoadEntryNavigationEntries<TEntity>(TEntity entity) where TEntity : class;
         Task LoadNestedEntryNavigationEntries<TEntity>(TEntity entity) where TEntity : class;

@@ -2,7 +2,10 @@
 
 <div @ref="@anchorRef" class="mdc-dropdown @Class @(IsOpen ? "mdc-dropdown-open" : string.Empty)" style="@Style">
 	<div class="mdc-dropdown-button @ButtonClass" style="@ButtonStyle" @onclick="this.Toggle" @onclick:stopPropagation="true">
-		@ButtonContent
+		@if (ButtonContent != null)
+		{
+			@ButtonContent(menu)
+		}
 	</div>
 	<MatMenu @ref="menu" class="@MenuClass" style="@MenuStyle">
 		@if (MenuContent != null)

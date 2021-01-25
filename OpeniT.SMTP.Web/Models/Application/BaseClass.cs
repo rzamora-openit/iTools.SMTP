@@ -11,6 +11,8 @@ namespace OpeniT.SMTP.Web.Models
 		[Key, Column(Order = 0)]
 		public int Id { get; set; }
 
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		[Key, Column(Order = 1)]
 		public Guid Guid { get; set; } = Guid.NewGuid();
 
 		public string ClassId { get; set; }

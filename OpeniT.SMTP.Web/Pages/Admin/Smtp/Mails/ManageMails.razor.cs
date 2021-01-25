@@ -19,13 +19,31 @@ using System.Threading.Tasks;
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
 	[Authorize(Roles = "Administrator, Developer, User-Internal")]
-	[Route("/admin/smtp/mails"), 
-	Route("/admin/smtp/mails/add")]
+	[Route("/smtp/mails"), 
+	Route("/smtp/mails/add"),
+	Route("/smtp/mails/copy/{mailGuidString}"),
+	Route("/smtp/mails/view/{mailGuidString}"),
+	Route("/smtp/mails/delete/{mailGuidString}")]
 	public partial class ManageMails : ComponentBase, IDisposable
 	{
 		[Inject] private IPortalRepository portalRepository { get; set; }
-		[Inject] private NavigationManager navigationManager { get; set; }
 		[Inject] private IJSRuntime jsRuntime { get; set; }
+		[Inject] private NavigationManager navigationManager { get; set; }
+		[Inject] private AzureHelper azureHelper { get; set; }
+
+		[Parameter] public string mailGuidString { get; set; }
+		public Guid MailGuid
+		{
+			get
+			{
+				if (Guid.TryParse(mailGuidString, out var result))
+				{
+					return result;
+				}
+
+				return default;
+			}
+		}
 
 		private SemaphoreSlim singleTaskQueue = new SemaphoreSlim(1);
 
@@ -34,9 +52,15 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		public bool IsSiteValuesLoaded = false;
 		public bool IsDisposing = false;
 
-		public string MailsBaseRelativePath = "admin/smtp/mails";
+		public string MailsBaseRelativePath = "smtp/mails";
 
+		public SmtpMail Mail = new SmtpMail();
 		public List<SmtpMail> Mails;
+
+		#region SiteValues
+		public List<string> MailAddresses = new List<string>();
+		public List<AzureProfile> Profiles = new List<AzureProfile>();
+		#endregion SiteValues
 
 		#region Filters
 
@@ -61,7 +85,10 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		private Dictionary<string, ComponentStateViewModel> componentStates = new Dictionary<string, ComponentStateViewModel>()
 		{
 			{ "table", new ComponentStateViewModel() { Rendered = false, Shown = false } },
-			{ "add", new ComponentStateViewModel() { Rendered = false, Shown = false } }
+			{ "add", new ComponentStateViewModel() { Rendered = false, Shown = false } },
+			{ "view", new ComponentStateViewModel() { Rendered = false, Shown = false } },
+			{ "copy", new ComponentStateViewModel() { Rendered = false, Shown = false } },
+			{ "delete", new ComponentStateViewModel() { Rendered = false, Shown = false } }
 		};
 
 		private readonly EventHandler<LocationChangedEventArgs>? locationChanged;
@@ -99,6 +126,36 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 						this.SetCurrentVisibleComponents(new[] { "add" });
 					}
 
+					if (baseRelativePath.StartsWith($"{MailsBaseRelativePath}/view") && MailGuid != default)
+					{
+						this.SetCurrentVisibleComponents(new[] { "table", "view" });
+					}
+
+					if (baseRelativePath.StartsWith($"{MailsBaseRelativePath}/copy") && MailGuid != default)
+					{
+						this.SetCurrentVisibleComponents(new[] { "copy" });
+					}
+
+					if (baseRelativePath.StartsWith($"{MailsBaseRelativePath}/delete") && MailGuid != default)
+					{
+						this.SetCurrentVisibleComponents(new[] { "table", "delete" });
+					}
+
+					await singleTaskQueue.Enqueue(() => this.portalRepository.ReloadEntry(Mail));
+
+					await singleTaskQueue.Enqueue(() => this.LoadSiteValues());
+
+					if (mailGuidString != null)
+					{
+						Mail = await singleTaskQueue.Enqueue(() => this.portalRepository.GetFirst<SmtpMail>(filterExpression: m => m.Guid == MailGuid, includeDepth: 2));
+
+						if (Mail == null)
+						{
+							Mail = new SmtpMail();
+							this.SetCurrentVisibleComponents(new[] { "not-found" });
+						}
+					}
+
 					if (componentStates.TryGetValue("table", out var tableComponentState) && (tableComponentState?.Shown).GetValueOrDefault())
 					{
 						await this.LoadData();
@@ -111,6 +168,17 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
+			}
+		}
+
+		private async Task LoadSiteValues()
+		{
+			if (!IsSiteValuesLoaded)
+			{
+				IsSiteValuesLoaded = true;
+
+				Profiles = await azureHelper.GetUsers($"?$select=accountEnabled,mail,companyName,displayName,department,givenName,jobTitle,physicalDeliveryOfficeName,surname,userPrincipalName&$top=999");
+				MailAddresses = Profiles?.Where(p => p != null && p.AccountEnabled)?.Select(p => p.Mail)?.Distinct()?.ToList() ?? new List<string>();
 			}
 		}
 
@@ -296,6 +364,31 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			}
 		}
 
+		public async Task<SmtpMail> GetMailCopy(SmtpMail model)
+		{
+			try
+			{
+				IsBusy = true;
+				StateHasChanged();
+
+				if (model != null)
+				{
+					var copy = await singleTaskQueue.Enqueue(() => this.portalRepository.CloneEntry<SmtpMail>(model));
+
+					IsBusy = false;
+					StateHasChanged();
+
+					return copy;
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+			return null;
+		}
+
 		public async Task<bool> AddMail(SmtpMail model)
 		{
 			try
@@ -306,6 +399,36 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				if (model != null)
 				{
 					await singleTaskQueue.Enqueue(() => this.portalRepository.Add<SmtpMail>(model));
+
+					if (await singleTaskQueue.Enqueue(() => this.portalRepository.SaveChangesAsync()))
+					{
+						Mails?.Insert(0, model);
+
+						IsBusy = false;
+						StateHasChanged();
+
+						return true;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+			return false;
+		}
+
+		public async Task<bool> DeleteMail(SmtpMail model)
+		{
+			try
+			{
+				IsBusy = true;
+				StateHasChanged();
+
+				if (model != null)
+				{
+					await singleTaskQueue.Enqueue(() => this.portalRepository.Remove<SmtpMail>(model));
 
 					if (await singleTaskQueue.Enqueue(() => this.portalRepository.SaveChangesAsync()))
 					{

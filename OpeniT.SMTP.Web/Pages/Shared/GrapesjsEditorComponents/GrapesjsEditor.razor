@@ -1,9 +1,7 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Shared
 
 <div class="grapesjs-editor-container">
-	<div @ref="editorElement">
-		@ComponentValue
-	</div>
+	<div @ref="editorElement"></div>
 	@if (!grapesjsIsInitialized || isBusy)
 	{
 		<div class="overlay">

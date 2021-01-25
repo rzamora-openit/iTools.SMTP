@@ -28,7 +28,7 @@
 
 	<form class="form-inline flex-nowrap flex-grow-1 align-self-stretch @(!searchIsOpen ? "d-none" : string.Empty)" style="@(isXSmallScreen ? "position: absolute; width: 100%; top: 0; height: calc(3.5rem + 1px); background: #ffffff; border-bottom: 1px solid #dee2e6; z-index: 3;" : string.Empty)">
 		@{ 
-			var services = siteCascadingValue?.ServicesGroups?.SelectMany(sg => sg?.Services ?? Enumerable.Empty<ServiceViewModel>()) ?? Enumerable.Empty<ServiceViewModel>();
+			var services = fixedSiteCascadingValue?.ServicesGroups?.SelectMany(sg => sg?.Services ?? Enumerable.Empty<ServiceViewModel>()) ?? Enumerable.Empty<ServiceViewModel>();
 			<MatAutocompleteList @ref="matAutocompleteList" Items="services" Label="Search accross the site" CustomStringSelector="@(i => i?.Title)" Value="@selectedService" ValueChanged="@((ServiceViewModel value) => this.SearchValueChange(value))" Icon="find_in_page" FullWidth="true" NumberOfElementsInPopup="@services.Count()">
 				<ItemTemplate>
 					<div class="d-flex align-items-center w-100 border-top">

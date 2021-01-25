@@ -10,4 +10,19 @@
 	{
 		<AddMail Shown="@componentStates["add"].Shown"></AddMail>
 	}
+
+	@if (componentStates["view"].Rendered)
+	{
+		<ViewMail Mail="@Mail" IsOpen="@componentStates["view"].Shown" IsOpenChanged="@((bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, "view"))"></ViewMail>
+	}
+
+	@if (componentStates["copy"].Rendered)
+	{
+		<CopyMail Mail="@Mail" Shown="@componentStates["copy"].Shown"></CopyMail>
+	}
+
+	@if (componentStates["delete"].Rendered)
+	{
+		<DeleteMail Mail="@Mail" IsOpen="@componentStates["delete"].Shown" IsOpenChanged="@((bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, "delete"))"></DeleteMail>
+	}
 </CascadingValue>

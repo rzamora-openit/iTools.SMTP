@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace OpeniT.SMTP.Web.DataRepositories
 {
@@ -102,16 +103,53 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 return EntityState.Detached;
             };
         }
-        public TEntity CloneEntry<TEntity>(TEntity source, TEntity destination) where TEntity : class
+        public TEntity CloneEntry<TEntity>(TEntity source) where TEntity : class
         {
-            var sourceEntry = this.context.Entry(source);
-            var destinationEntry = this.context.Entry(destination);
-
-            destinationEntry.CurrentValues.SetValues(sourceEntry.CurrentValues.Clone());
-
-            foreach (var referenceEntry in sourceEntry.References)
+            var destination = (TEntity)Activator.CreateInstance(source.GetType());
+            if (source != null)
             {
-                destinationEntry.Reference(referenceEntry.Metadata.Name).CurrentValue = referenceEntry.CurrentValue;
+                var sourceEntry = this.context.Entry(source);
+                var destinationEntry = this.context.Entry(destination);
+
+                destinationEntry.CurrentValues.SetValues(sourceEntry.CurrentValues.Clone());
+                var keyProperties = this.context.Model.FindEntityType(destination.GetType()).FindPrimaryKey().Properties;
+                foreach (var keyProperty in keyProperties)
+				{
+                    if (keyProperty.ClrType.IsValueType)
+					{
+                        destinationEntry.Property(keyProperty.Name).CurrentValue = Activator.CreateInstance(keyProperty.ClrType);
+                    }
+                    else
+                    {
+                        destinationEntry.Property(keyProperty.Name).CurrentValue = null;
+                    }
+                }
+
+                foreach (var referenceEntry in sourceEntry.References)
+                {
+                    if (referenceEntry.CurrentValue != null)
+                    {
+                        destinationEntry.Reference(referenceEntry.Metadata.Name).CurrentValue = this.CloneEntry(referenceEntry.CurrentValue);
+                    }
+                }
+
+                foreach (var collectionEntry in sourceEntry.Collections)
+                {
+                    if (collectionEntry.CurrentValue != null)
+                    {
+                        var copyValuesType = typeof(List<>).MakeGenericType(collectionEntry.Metadata.PropertyInfo.PropertyType.GetGenericArguments()[0]);
+                        var copyValues = (IList)Activator.CreateInstance(copyValuesType);
+                        foreach (var entry in collectionEntry.CurrentValue)
+                        {
+                            object copyValue = null;
+                            copyValue = this.CloneEntry(entry);
+
+                            copyValues.Add(copyValue);
+                        }
+
+                        destinationEntry.Collection(collectionEntry.Metadata.Name).CurrentValue = copyValues;
+                    }
+                }
             }
 
             return destination;

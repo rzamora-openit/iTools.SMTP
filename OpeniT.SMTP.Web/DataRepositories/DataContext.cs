@@ -50,7 +50,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
             //builder.Entity<IdentityRoleClaim<string>>(entity => entity.Property(m => m.RoleId).HasMaxLength(85));
             //#endregion IdentityFramework
 
-            builder.Entity<SmtpMail>().HasIndex(e => e.Guid).IsUnique();
+            builder.Entity<SmtpMail>().HasKey(e => new { e.Id, e.Guid });
         }
 
         #region Smtp

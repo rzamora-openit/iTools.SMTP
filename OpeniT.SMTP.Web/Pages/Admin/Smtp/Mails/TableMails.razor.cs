@@ -16,7 +16,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
     [Authorize(Roles = "Administrator, Developer, User-Internal")]
     public partial class TableMails : ComponentBase
     {
-        [CascadingParameter] public BrowserSizeStateViewModel browserSize { get; set; } = new BrowserSizeStateViewModel();
+        [CascadingParameter] public SiteCascadingValueViewModel siteCascadingValue { get; set; } = new SiteCascadingValueViewModel();
         [CascadingParameter] public ManageMails ManageMails { get; set; }
 
         [Parameter] public bool Shown { get; set; } = false;

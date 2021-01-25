@@ -14,7 +14,7 @@
 	<section class="content p-0">
 		<div class="container-fluid p-0">
 			<div class="d-flex flex-wrap pt-4 pb-4 pr-responsive">
-				@foreach (var service in siteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type != ServiceGroupType.ControlSidebar)?.SelectMany(sg => sg?.Services)?.Where(s => !string.Equals(s?.Title, "Home")) ?? Enumerable.Empty<ServiceViewModel>())
+				@foreach (var service in fixedSiteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type != ServiceGroupType.ControlSidebar)?.SelectMany(sg => sg?.Services)?.Where(s => !string.Equals(s?.Title, "Home")) ?? Enumerable.Empty<ServiceViewModel>())
 				{
 					<div class="pt-3 pb-3 pl-responsive align-self-stretch flex-basis-33">
 						<div class="card border h-100 mb-0">

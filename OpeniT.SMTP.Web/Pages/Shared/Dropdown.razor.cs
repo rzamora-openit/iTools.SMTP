@@ -29,7 +29,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 		[Parameter] public string Style { get; set; }
 		[Parameter] public DropdownAnchorCorner Position { get; set; } = DropdownAnchorCorner.BOTTOM_LEFT;
 		[Parameter] public bool FlipCornerHorizontally { get; set; }
-		[Parameter] public RenderFragment ButtonContent { get; set; }
+		[Parameter] public RenderFragment<MatMenu> ButtonContent { get; set; }
 		[Parameter] public RenderFragment<MatMenu> MenuContent { get; set; }
 		[Parameter] public bool IsOpen { get; set; }
 		[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }

@@ -3,20 +3,20 @@
 @if (ManageMails.IsBusy)
 {
 	<div class="@(Shown && ManageMails.GetVisibleComponents().Count() == 1 ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
-		<MatProgressBar Class="position-sticky" Style="top: 0;" Indeterminate="true"></MatProgressBar>
+		<MatProgressBar Style="position: fixed; top: calc(3.5rem + 1px);" Indeterminate="true"></MatProgressBar>
 	</div>
 }
 <div class="@(Shown ? "animateFadeIn" : "d-none")">
 	<section class="content-header position-sticky">
 		<div class="container-fluid d-flex align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
-			@if (browserSize?.SmallDown == true)
+			@if (siteCascadingValue?.BrowserSizeState?.SmallDown == true)
 			{
 				<div class="d-flex align-items-center" style="min-width: 0;">
 					<MatIcon Icon="email"></MatIcon>
 					<span class="text-truncate text-lg text-bold ml-1" data-toggle="tooltip" title="Mails">Mails</span>
 				</div>
 				<div class="text-right">
-					<NavLink href="/admin/smtp/mails/add" class="d-inline-block">
+					<NavLink href="/smtp/mails/add" class="d-inline-block">
 						<MatListItem>
 							<MatIconButton Class="mdc-icon-button-primary" Icon="library_add" data-toggle="tooltip" title="Add Mail"></MatIconButton>
 						</MatListItem>
@@ -55,7 +55,7 @@
 					</div>
 				</div>
 				<div class="text-right">
-					<NavLink href="/admin/smtp/mails/add">
+					<NavLink href="/smtp/mails/add">
 						<MatButton Unelevated="true" Icon="library_add" Class="ml-1">Add Mail</MatButton>
 					</NavLink>
 				</div>
@@ -65,7 +65,7 @@
 	<section class="content bg-white p-0">
 		<div class="container-fluid p-0">
 			<div class="d-flex flex-wrap align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
-				<Paginator Class="d-flex justify-content-end flex-grow-1" Length="@ManageMails.SelectedPage.Length" PageSize="ManageMails.SelectedPage.PageSize" PageIndex="ManageMails.SelectedPage.PageIndex" Page="@this.PaginationChanged" Summarized="browserSize?.SmallDown == true"></Paginator>
+				<Paginator Class="d-flex justify-content-end flex-grow-1" Length="@ManageMails.SelectedPage.Length" PageSize="ManageMails.SelectedPage.PageSize" PageIndex="ManageMails.SelectedPage.PageIndex" Page="@this.PaginationChanged" Summarized="siteCascadingValue?.BrowserSizeState?.SmallDown == true"></Paginator>
 			</div>
 			<div class="position-relative pl-responsive pr-responsive">
 				<div class="table-responsive">
@@ -112,7 +112,7 @@
 										<td>
 											<div class="d-flex align-items-center">
 												<div class="d-flex flex-column accent-dark">
-													<NavLink class="line-height-1" href="@($"/admin/smtp/mails/view/{mail?.Guid}")">@mail.Subject</NavLink>
+													<NavLink class="line-height-1" href="@($"/smtp/mails/view/{mail?.Guid}")">@mail.Subject</NavLink>
 												</div>
 											</div>
 										</td>
@@ -160,7 +160,13 @@
 											}
 										</td>
 										<td class="bg-white text-right position-sticky" style="right: 0;" nowrap>
-											<NavLink href="@($"/admin/smtp/mails/view/{mail?.Guid}")">
+											<NavLink href="@($"/smtp/mails/copy/{mail?.Guid}")">
+												<MatIconButton Class="mdc-icon-button-primary" Icon="file_copy" data-toggle="tooltip" title="Copy"></MatIconButton>
+											</NavLink>
+											<NavLink href="@($"/smtp/mails/delete/{mail?.Guid}")">
+												<MatIconButton Class="mdc-icon-button-primary" Icon="delete" data-toggle="tooltip" title="Delete"></MatIconButton>
+											</NavLink>
+											<NavLink href="@($"/smtp/mails/view/{mail?.Guid}")">
 												<MatIconButton Class="mdc-icon-button-primary" Icon="view_compact" data-toggle="tooltip" title="View Details"></MatIconButton>
 											</NavLink>
 										</td>

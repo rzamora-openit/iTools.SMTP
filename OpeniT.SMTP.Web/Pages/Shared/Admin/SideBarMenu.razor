@@ -4,16 +4,16 @@
 	<div class="sidebar">
 		<div class="user-panel border-bottom border-white d-flex flex-column justify-content-center">
 			<div class="image text-center p-0">
-				<img class="rounded-circle bg-white" src="@($"/file/image/{appUser?.Email}")" onerror="if (this.src != '/images/textures/bright-squares.png') this.src = '/images/textures/bright-squares.png';" />
+				<img class="rounded-circle bg-white" src="@($"/file/image/{fixedSiteCascadingValue?.ApplicationUser?.Email}")" onerror="if (this.src != '/images/textures/bright-squares.png') this.src = '/images/textures/bright-squares.png';" />
 			</div>
 			<div class="info text-center mt-2">
-				<span class="d-block text-md text-bold text-white text-wrap text-break">@appUser?.DisplayName</span>
+				<span class="d-block text-md text-bold text-white text-wrap text-break">@fixedSiteCascadingValue?.ApplicationUser?.DisplayName</span>
 				@*<span class="d-block text-sm text-white-50">@appUser?.InternalAccount?.JobTitle</span>*@
 			</div>
 		</div>
 		<nav class="nav-scrollable">
 			<ul class="nav nav-pills nav-sidebar flex-column text-sm nav-flat">
-				@foreach (var serviceGroup in siteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type == ServiceGroupType.MainSidebar)?.OrderBy(sg => sg?.OrderOfImportance) ?? Enumerable.Empty<ServiceGroupViewModel>())
+				@foreach (var serviceGroup in fixedSiteCascadingValue?.ServicesGroups?.Where(sg => sg?.Type == ServiceGroupType.MainSidebar)?.OrderBy(sg => sg?.OrderOfImportance) ?? Enumerable.Empty<ServiceGroupViewModel>())
 				{
 					if (string.Equals(serviceGroup?.Services?.FirstOrDefault()?.Title, "Home"))
 					{

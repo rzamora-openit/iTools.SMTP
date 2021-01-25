@@ -68,9 +68,6 @@
                     command: function () { editor.runCommand('core:preview') }
             }]);
 
-            // Hide component settings
-            $(".gjs-pn-btn.fa.fa-cog").hide();
-
             // Beautify tooltips
             var titles = editorElement.querySelectorAll('*[title]');
             for (var i = 0; i < titles.length; i++) {
@@ -84,8 +81,6 @@
             editorElement.grapesjsEditorInstance.setComponents(value);
         },
         getValue: function (editorElement) {
-            var value = editorElement.grapesjsEditorInstance.runCommand('gjs-get-inlined-html');
-
             return editorElement.grapesjsEditorInstance.runCommand('gjs-get-inlined-html');
         },
         readValueLength: function (editorElement) {
@@ -105,6 +100,24 @@
 
         },
         enable: function (editorElement, mode) {
+            //editorElement
+            //    .grapesjsEditorInstance
+            //    .DomComponents
+            //    .getWrapper().onAll(function (comp) {
+            //        comp.set({
+            //            editable: mode,
+            //            copyable: mode,
+            //            draggable: mode,
+            //            droppable: mode,
+            //            editable: mode,
+            //            highlightable: mode,
+            //            hoverable: mode,
+            //            layerable: mode,
+            //            removable: mode,
+            //            resizable: mode,
+            //            selectable: mode
+            //        });
+            //    });
             //console.log(editorElement.grapesjsEditorInstance);
         },
         destroy: function (editorElement) {

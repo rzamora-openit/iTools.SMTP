@@ -15,17 +15,8 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 		[Inject] private ILocalStorageService localStorage { get; set; }
 		[Inject] private IPortalRepository portalRepository { get; set; }
 
+		[CascadingParameter] FixedSiteCascadingValueViewModel fixedSiteCascadingValue { get; set; }
 		[CascadingParameter] SiteCascadingValueViewModel siteCascadingValue { get; set; }
-		[CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
-
-		private ApplicationUser appUser;
-		private SemaphoreSlim singleTaskQueue = new SemaphoreSlim(1);
-
-		protected override async Task OnInitializedAsync()
-		{
-			var user = (await singleTaskQueue.Enqueue(() => authenticationStateTask)).User;
-			appUser = await singleTaskQueue.Enqueue(() => this.portalRepository.GetUserByUserName(user.Identity.Name));
-		}
 
 		private async Task ToggleServiceGroupCollapsed(ServiceGroupViewModel serviceGroup)
 		{

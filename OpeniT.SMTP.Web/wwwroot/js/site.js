@@ -267,6 +267,30 @@
 				}
             }, 10);
         },
+        initMenu: function (jsHelper, menuElement, anchorPosition, flipCornerHorizontally) {
+            var isAnchorCornerInitialized = false;
+            var previousClassList = [].slice.call(menuElement);
+
+            window.setInterval(function () {
+                var classList = [].slice.call(menuElement.classList);
+                if ((previousClassList.indexOf("mdc-menu-surface--open") < 0 && classList.indexOf("mdc-menu-surface--open") > -1) ||
+                    (previousClassList.indexOf("mdc-menu-surface--open") > -1 && classList.indexOf("mdc-menu-surface--open") < 0)) {
+                    var isOpen = menuElement.classList.contains("mdc-menu-surface--open");
+                    previousClassList = classList;
+
+                    jsHelper.invokeMethodAsync("NotifyIsOpenChanged", isOpen);
+                }
+
+                if (!isAnchorCornerInitialized && menuElement.matBlazorRef) {
+                    isAnchorCornerInitialized = true;
+
+                    menuElement.matBlazorRef.menuSurface_.setAnchorCorner(anchorPosition);
+                    if (flipCornerHorizontally) {
+                        menuElement.matBlazorRef.menuSurface_.foundation.flipCornerHorizontally();
+                    }
+                }
+            }, 10);
+        },
         getParentWithClass: function (el, cls) {
             while ((el = el.parentElement) && !el.classList.contains(cls));
             return el;

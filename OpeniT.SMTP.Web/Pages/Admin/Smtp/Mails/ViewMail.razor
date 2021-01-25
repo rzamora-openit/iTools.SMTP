@@ -1,0 +1,125 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Admin
+
+<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!ManageMails.IsBusy" SurfaceStyle="width: 80rem">
+	<MatDialogTitle Class="justify-content-between border-bottom">
+		<div class="d-flex align-items-center" style="min-width: 0;">
+			<MatIconButton Class="close-button" Disabled="ManageMails.IsBusy" Icon="close" OnClick="this.Close"></MatIconButton>
+			<span class="text-title text-truncate @(ManageMails.IsBusy ? "text-disabled" : string.Empty)" data-toggle="tooltip" data-placement="top" title="@Mail?.Subject Details">@Mail?.Subject Details</span>
+		</div>
+		<Dropdown FlipCornerHorizontally="true">
+			<ButtonContent>
+				<MatButton Disabled="ManageMails.IsBusy" Class="text-nowrap">
+					<span>Actions</span>
+					<i class="fas fa-caret-down ml-2"></i>
+				</MatButton>
+			</ButtonContent>
+			<MenuContent>
+				<MatList Class="accent-dark">
+					<NavLink href="@($"/smtp/mails/copy/{Mail?.Guid}")">
+						<MatListItem><MatIcon Icon="file_copy"></MatIcon><span class="ml-2">Copy</span></MatListItem>
+					</NavLink>
+					<NavLink href="@($"/smtp/mails/delete/{Mail?.Guid}")">
+						<MatListItem><MatIcon Icon="delete"></MatIcon><span class="ml-2">Delete</span></MatListItem>
+					</NavLink>
+				</MatList>
+			</MenuContent>
+		</Dropdown>
+	</MatDialogTitle>
+	<MatDialogContent>
+		<div class="d-flex flex-wrap align-items-center text-break pb-3">
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>From</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (string.IsNullOrWhiteSpace(Mail?.From?.Address))
+							{
+								<div class="dashed pl-4 pr-4"></div>
+							}
+							else
+							{
+								@Mail.From.Address
+							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>To</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (!Enumerable.Any(Mail?.To ?? Enumerable.Empty<SmtpMailAddress>()))
+							{
+								<div class="dashed pl-4 pr-4"></div>
+							}
+							else
+							{
+								@string.Join(", ", Mail.To.Select(to => to.Address).OrderBy(a => a))
+							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>CC</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (!Enumerable.Any(Mail?.CC ?? Enumerable.Empty<SmtpMailAddress>()))
+							{
+								<div class="dashed pl-4 pr-4"></div>
+							}
+							else
+							{
+								@string.Join(", ", Mail.CC.Select(cc => cc.Address).OrderBy(a => a))
+							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>Subject</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (string.IsNullOrWhiteSpace(Mail?.Subject))
+							{
+								<div class="dashed pl-4 pr-4"></div>
+							}
+							else
+							{
+								@Mail.Subject
+							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-column flex-basis-100">
+				<MatAccordion Multi="true">
+					<MatExpansionPanel Expanded="true">
+						<MatExpansionPanelSummary Class="bg-mdc-gray">
+							<MatExpansionPanelHeader Class="font-weight-bold flex-grow-1">Body</MatExpansionPanelHeader>
+						</MatExpansionPanelSummary>
+						<MatExpansionPanelDetails Class="p-0">
+							@if (!string.IsNullOrWhiteSpace(Mail?.Body))
+							{
+								<iframe style="min-height: 900px; width: 100%;" srcdoc="@Mail.Body"></iframe>
+							}
+							else
+							{
+								<div class="markup-string position-relative p-4">
+									<div class="dashed pl-4 pr-4"></div>
+								</div>
+							}
+						</MatExpansionPanelDetails>
+					</MatExpansionPanel>
+				</MatAccordion>
+			</div>
+		</div>
+	</MatDialogContent>
+	@if (ManageMails.IsBusy)
+	{
+		<MatProgressBar Indeterminate="true" Class="animate-on-bottom"></MatProgressBar>
+	}
+</MatDialog>

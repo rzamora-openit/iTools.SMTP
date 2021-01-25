@@ -34,6 +34,15 @@ namespace OpeniT.SMTP.Web.Methods
         {
             return jsRuntime.InvokeVoidAsync($"{SiteFunctionsPrefix}.initDropdown", jsHelper, menuElement, anchorCorner, anchorCorner, flipCornerHorizontally);
         }
+        internal static ValueTask InitMenu(
+            IJSRuntime jsRuntime,
+            DotNetObjectReference<BaseMenu> jsHelper,
+            ElementReference menuElement,
+            MenuAnchorPosition anchorPosition,
+            bool flipCornerHorizontally)
+        {
+            return jsRuntime.InvokeVoidAsync($"{SiteFunctionsPrefix}.initMenu", jsHelper, menuElement, anchorPosition, flipCornerHorizontally);
+        }
         internal static ValueTask<string> InitResizableTable(
             IJSRuntime jsRuntime,
             ElementReference tableElement)

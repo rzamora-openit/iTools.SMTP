@@ -24,6 +24,7 @@ using System.Net.Http;
 using Blazored.LocalStorage;
 using MatBlazor;
 using iTools.Utilities.JsRuntimeStream;
+using OpeniT.SMTP.Web.Helpers;
 
 namespace OpeniT.SMTP.Web
 {
@@ -50,6 +51,7 @@ namespace OpeniT.SMTP.Web
             services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("PortalConnection"), b => b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)), ServiceLifetime.Transient);
 
             services.AddTransient<IPortalRepository, PortalRepository>();
+            services.AddTransient<AzureHelper>();
             services.AddScoped<SMTPMethods>();
             services.AddScoped<HttpClient>();
             services.AddScoped<ResizeListener>();

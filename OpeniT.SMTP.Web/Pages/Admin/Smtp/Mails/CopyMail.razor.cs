@@ -2,49 +2,49 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using OpeniT.SMTP.Web.Models;
 using OpeniT.SMTP.Web.Methods;
+using OpeniT.SMTP.Web.Models;
+using OpeniT.SMTP.Web.Pages.Shared;
 using OpeniT.SMTP.Web.Pages.Shared.Admin;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using OpeniT.SMTP.Web.Pages.Shared;
 using System.Threading;
-using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
 	[Authorize(Roles = "Administrator, Developer, User-Internal")]
-	public partial class AddMail : ComponentBase
+	public partial class CopyMail : ComponentBase
 	{
 		[Inject] private IMatToaster matToaster { get; set; }
 		[Inject] private NavigationManager navigationManager { get; set; }
-		[Inject] private SMTPMethods smtpMethods { get; set; }
 
-		[CascadingParameter] private ManageMails ManageMails { get; set; }
+		[CascadingParameter] public ManageMails ManageMails { get; set; }
 
 		[Parameter] public bool Shown { get; set; }
+		[Parameter] public SmtpMail Mail { get; set; } = new SmtpMail();
 
-		private bool isBusy = false;
-		private bool previousShown;
 
-		private EditContext editContext;
-		private CustomRemoteValidator customRemoteValidator;
-		private SmtpMail model = new SmtpMail();
-		private string mailFrom;
-		private string mailTo;
-		private string mailCC;
+		private SmtpMail previousMail = new SmtpMail();
 
 		private GrapesjsEditor grapesjsEditor;
 		private CancellationTokenSource grapesjsEditorValueCts;
+
+		private EditContext editContext;
+		private CustomRemoteValidator customRemoteValidator;
+		private SmtpMail model;
+		private string mailFrom;
+		private string mailTo;
+		private string mailCC;
 
 		private MatTextField<string> MailFromTextField;
 		private MatTextField<string> MailToTextField;
 		private MatTextField<string> MailCCTextField;
 		private Menu MailAddressesMenu;
-		private string mailAddressesSearchText => 
+		private string mailAddressesSearchText =>
 			ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailFromTextField?.Ref)
 			? model?.From?.Address
 			: ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailToTextField?.Ref)
@@ -53,22 +53,42 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 					? model?.CC?.LastOrDefault()?.Address
 					: null;
 
+		private bool isBusy = false;
+
 		protected override void OnInitialized()
 		{
-			this.Clear();
-			previousShown = !Shown;
+			try
+			{
+				model = new SmtpMail();
+				model.From = new SmtpMailAddress();
+				model.To = new List<SmtpMailAddress>();
+				model.CC = new List<SmtpMailAddress>();
+				mailFrom = null;
+				mailTo = null;
+				mailCC = null;
+
+				editContext = new EditContext(model);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
-		protected override void OnParametersSet()
+		protected override async Task OnParametersSetAsync()
 		{
-			if (previousShown != Shown)
+			if (previousMail != Mail)
 			{
-				previousShown = Shown;
+				previousMail = Mail;
 
-				if (Shown)
-				{
-					this.Clear();
-				}
+				model = await ManageMails.GetMailCopy(Mail) ?? new SmtpMail();
+				model.From = model.From ?? new SmtpMailAddress();
+				model.To = model.To ?? new List<SmtpMailAddress>();
+				model.CC = model.CC ?? new List<SmtpMailAddress>();
+				mailFrom = model?.From.Address;
+				mailTo = string.Join(", ", model?.To?.Select(to => to?.Address) ?? Enumerable.Empty<string>());
+				mailCC = string.Join(", ", model?.CC?.Select(cc => cc?.Address) ?? Enumerable.Empty<string>());
+				editContext = new EditContext(model);
 			}
 		}
 
@@ -119,26 +139,6 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 				mailCC = string.Join(", ", model?.CC?.Select(cc => cc?.Address) ?? Enumerable.Empty<string>());
 				editContext.NotifyFieldChanged(() => model.CC);
-			}
-		}
-
-		private void Clear()
-		{
-			try
-			{
-				model = new SmtpMail();
-				model.From = new SmtpMailAddress();
-				model.To = new List<SmtpMailAddress>();
-				model.CC = new List<SmtpMailAddress>();
-				mailFrom = null;
-				mailTo = null;
-				mailCC = null;
-
-				editContext = new EditContext(model);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
 			}
 		}
 
@@ -269,20 +269,17 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				{
 					if (await ManageMails.AddMail(model))
 					{
-						await smtpMethods.SendMail(model);
-
 						matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
-						this.navigationManager.NavigateTo(ManageMails.CurrentFiltersUri);
+						navigationManager.NavigateTo(ManageMails.CurrentFiltersUri);
 					}
 				}
 				else
 				{
-					this.matToaster.Add(message: $"Please fill out correctly to save.", type: MatToastType.Primary, icon: "notifications");
+					matToaster.Add(message: $"Please fill out correctly to save.", type: MatToastType.Primary, icon: "notifications");
 				}
 			}
 			catch (Exception ex)
 			{
-				grapesjsEditorValueCts?.Cancel();
 				Console.WriteLine(ex.Message);
 			}
 			finally

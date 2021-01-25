@@ -18,12 +18,12 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 		[Inject] private IJSRuntime jsRuntime { get; set; }
 		[Inject] private NavigationManager navigationManager { get; set; }
 
+		[CascadingParameter] FixedSiteCascadingValueViewModel fixedSiteCascadingValue { get; set; }
 		[CascadingParameter] SiteCascadingValueViewModel siteCascadingValue { get; set; }
-		[CascadingParameter] BrowserSizeStateViewModel browserSizeState { get; set; }
 
 		private bool showControls = false;
 		private bool searchIsOpen = false;
-		private bool isXSmallScreen => browserSizeState?.XSmallDown == true;
+		private bool isXSmallScreen => siteCascadingValue?.BrowserSizeState?.XSmallDown == true;
 
 		private MatAutocompleteList<ServiceViewModel> matAutocompleteList;
 

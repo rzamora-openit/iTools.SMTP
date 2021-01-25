@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
 	[Authorize(Roles = "Administrator, Developer, User-Internal")]
-	[Route("/admin")]
+	[Route("/")]
 	public partial class Index : ComponentBase
 	{
-		[CascadingParameter] SiteCascadingValueViewModel siteCascadingValue { get; set; }
+		[CascadingParameter] FixedSiteCascadingValueViewModel fixedSiteCascadingValue { get; set; }
 
 		[CascadingParameter] MatTheme theme { get; set; }
 	}

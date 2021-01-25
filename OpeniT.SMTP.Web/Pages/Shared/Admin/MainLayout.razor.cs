@@ -2,8 +2,10 @@
 using BlazorPro.BlazorSize;
 using MatBlazor;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
+using OpeniT.SMTP.Web.DataRepositories;
 using OpeniT.SMTP.Web.Methods;
 using OpeniT.SMTP.Web.ViewModels;
 using System;
@@ -15,10 +17,13 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 {
 	public partial class MainLayout : LayoutComponentBase, IDisposable
 	{
+		[Inject] private IPortalRepository portalRepository { get; set; }
 		[Inject] private IJSRuntime jsRuntime { get; set; }
-		[Inject] public ILocalStorageService localStorage { get; set; }
+		[Inject] private ILocalStorageService localStorage { get; set; }
 		[Inject] private NavigationManager navigationManager { get; set; }
 		[Inject] private ResizeListener resizeListener { get; set; }
+
+		[CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
 
 		private bool isInitialized = false;
 		private bool isSizeInitialized = false;
@@ -26,20 +31,23 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 
 		private string classMapper => $"wrapper {(siteCascadingValue?.SidebarIsOpen == true ? "sidebar-open" : "sidebar-collapse")}";
 
-		private BrowserSizeStateViewModel browserSizeState = new BrowserSizeStateViewModel();
-		private SiteCascadingValueViewModel siteCascadingValue { get; set; } = new SiteCascadingValueViewModel()
+		private FixedSiteCascadingValueViewModel fixedSiteCascadingValue { get; set; } = new FixedSiteCascadingValueViewModel()
 		{
-			SidebarIsOpen = true,
-			Theme = new MatTheme()
-			{
-				Primary = "#cd172d",
-				Secondary = "#cd172d"
-			},
 			ServicesGroups = new List<ServiceGroupViewModel>()
 			{
 				Constants.Services.HOME_SERVICE_GROUP,
 				Constants.Services.MANAGE_SMTP_SERVICE_GROUP
 			}
+		};
+		private SiteCascadingValueViewModel siteCascadingValue { get; set; } = new SiteCascadingValueViewModel()
+		{
+			SidebarIsOpen = true,
+			Theme = new ThemeViewModel()
+			{
+				Primary = "#cd172d",
+				Secondary = "#cd172d"
+			},
+			BrowserSizeState = new BrowserSizeStateViewModel()
 		};
 
 		private EventHandler<LocationChangedEventArgs> locationChanged;
@@ -55,7 +63,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 					if (!isDisposing)
 					{
 						var currentUri = "/" + navigationManager.ToBaseRelativePath(navigationManager.Uri);
-						var serviceGroup = siteCascadingValue?.ServicesGroups?.FirstOrDefault(sg => sg?.Services?.Any(s => !string.Equals(s?.Title, "Home") && currentUri?.Contains(s?.Uri) == true) == true);
+						var serviceGroup = fixedSiteCascadingValue?.ServicesGroups?.FirstOrDefault(sg => sg?.Services?.Any(s => !string.Equals(s?.Title, "Home") && currentUri?.Contains(s?.Uri) == true) == true);
 
 						if (serviceGroup != null && siteCascadingValue.ServiceGroupKeyToCollapsedMap != null)
 						{
@@ -98,10 +106,10 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 				{
 					if (!isDisposing)
 					{
-						browserSizeState.LargeDown = window.Width < 1199.98;
-						browserSizeState.MediumDown = window.Width < 991.98;
-						browserSizeState.SmallDown = window.Width < 767.98;
-						browserSizeState.XSmallDown = window.Width < 576;
+						siteCascadingValue.BrowserSizeState.LargeDown = window.Width < 1199.98;
+						siteCascadingValue.BrowserSizeState.MediumDown = window.Width < 991.98;
+						siteCascadingValue.BrowserSizeState.SmallDown = window.Width < 767.98;
+						siteCascadingValue.BrowserSizeState.XSmallDown = window.Width < 576;
 
 						isSizeInitialized = true;
 					}
@@ -117,10 +125,14 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 			};
 		}
 
-		protected override void OnInitialized()
+		protected override async Task OnInitializedAsync()
 		{
 			navigationManager.LocationChanged += locationChanged;
 			localStorage.Changed += localStorageChanged;
+
+			var authState = await authenticationStateTask;
+			var user = authState.User;
+			fixedSiteCascadingValue.ApplicationUser = await this.portalRepository.GetUserByUserName(user.Identity.Name);
 		}
 
 		protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -139,8 +151,8 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 					await this.ApplySavedSiteCascadingValue(savedSiteCascadingValue);
 				}
 
-				await JSIntropMethods.AdminSiteInit(jsRuntime);
-				await JSIntropMethods.SiteInit(jsRuntime);
+				await JSIntropMethods.AdminSiteInit(this.jsRuntime);
+				await JSIntropMethods.SiteInit(this.jsRuntime);
 
 				locationChanged.Invoke(this, null);
 				isInitialized = true;
@@ -155,7 +167,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 			var siteCascadingValueHasChanged = false;
 			if (value.Theme == null)
 			{
-				siteCascadingValue.Theme = new MatTheme()
+				siteCascadingValue.Theme = new ThemeViewModel()
 				{
 					Primary = "#cd172d",
 					Secondary = "#cd172d"
@@ -169,7 +181,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 
 			if (value.ServiceGroupKeyToCollapsedMap == null)
 			{
-				siteCascadingValue.ServiceGroupKeyToCollapsedMap = value?.ServicesGroups?.ToDictionary(sg => sg.Key, sg => true) ?? new Dictionary<int, bool>();
+				siteCascadingValue.ServiceGroupKeyToCollapsedMap = fixedSiteCascadingValue?.ServicesGroups?.ToDictionary(sg => sg.Key, sg => true) ?? new Dictionary<int, bool>();
 				siteCascadingValueHasChanged = true;
 			}
 			else
@@ -182,12 +194,12 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 				await JSIntropMethods.SetSiteCascadingValue(localStorage, siteCascadingValue);
 			}
 
-			await JSIntropMethods.UpdateMatBlazorTheme(jsRuntime, siteCascadingValue.Theme.GetStyle());
+			await JSIntropMethods.UpdateMatBlazorTheme(this.jsRuntime, siteCascadingValue.Theme.GetStyle());
 		}
 
 		private async Task CloseSidebars()
 		{
-			if (browserSizeState?.SmallDown == true)
+			if (siteCascadingValue.BrowserSizeState?.SmallDown == true)
 			{
 				siteCascadingValue.SidebarIsOpen = false;
 			}

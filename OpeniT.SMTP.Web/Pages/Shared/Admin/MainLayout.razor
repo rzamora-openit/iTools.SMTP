@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 
-<CascadingValue Value="@browserSizeState">
+<CascadingValue Value="@fixedSiteCascadingValue" IsFixed="true">
 	<CascadingValue Value="@siteCascadingValue">
 		<div class="@classMapper">
 			<AdminNavMenu></AdminNavMenu>

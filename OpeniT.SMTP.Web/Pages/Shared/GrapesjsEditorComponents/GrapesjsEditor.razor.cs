@@ -21,9 +21,10 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 
 		[CascadingParameter] EditContext CascadedEditContext { get; set; } = default!;
 
-		[Parameter] public RenderFragment ComponentValue { get; set; }
+		[Parameter] public string Value { get; set; }
 		[Parameter] public bool Disabled { get; set; }
 
+		private string CurrentValue;
 		private bool CurrentDisabled;
 
 		private bool grapesjsIsInitialized = false;
@@ -67,6 +68,13 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 
 				if (grapesjsIsInitialized)
 				{
+					if (!string.Equals(CurrentValue, Value))
+					{
+						CurrentValue = Value;
+
+						await this.SetValue(Value);
+					}
+
 					if (CurrentDisabled != Disabled)
 					{
 						CurrentDisabled = Disabled;
@@ -93,9 +101,6 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 			{
 				isBusy = true;
 				StateHasChanged();
-
-				var buffer = new byte[4 * 1096];
-				string value = string.Empty;
 
 				using var stream = await jsRuntimeStream.InvokeReadStream("window.GrapesjsFunctions.getValue", cts.Token, editorElement);
 				using var memoryStream = new MemoryStream();

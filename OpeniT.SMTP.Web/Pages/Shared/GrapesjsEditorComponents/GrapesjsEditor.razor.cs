@@ -19,8 +19,6 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 		[Inject] private IJSRuntime jsRuntime { get; set; }
 		[Inject] private IJSRuntimeStream jsRuntimeStream { get; set; }
 
-		[CascadingParameter] EditContext CascadedEditContext { get; set; } = default!;
-
 		[Parameter] public string Value { get; set; }
 		[Parameter] public bool Disabled { get; set; }
 

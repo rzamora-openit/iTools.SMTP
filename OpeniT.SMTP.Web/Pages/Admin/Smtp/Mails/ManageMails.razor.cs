@@ -194,6 +194,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 					{
 						filterExpression = m =>
 							EF.Functions.Like(m.Subject, $"%{SearchValue}%") ||
+							EF.Functions.Like(m.DateCreated.ToString(), $"%{SearchValue}%") ||
 							EF.Functions.Like(m.Body, $"%{SearchValue}%") ||
 							EF.Functions.Like(m.From.Address, $"%{SearchValue}%") ||
 							m.To.Any(to => EF.Functions.Like(to.Address, $"%{SearchValue}%")) ||
@@ -209,6 +210,12 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 							dataSorts.Add(new DataSort<SmtpMail, object>()
 							{
 								OrderExpression = m => m.Subject
+							});
+							break;
+						case "Date":
+							dataSorts.Add(new DataSort<SmtpMail, object>()
+							{
+								OrderExpression = m => m.DateCreated
 							});
 							break;
 						case "Body":
@@ -264,7 +271,8 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 						await this.NavigateToFiltersQueryStrings();
 					}
 
-					Mails = await singleTaskQueue.Enqueue(() => this.portalRepository.GetAll(filterExpression: filterExpression, includeDepth: 2, dataPagination: new DataPagination() { PageSize = SelectedPage.PageSize, PageIndex = SelectedPage.PageIndex }, dataSorts: dataSorts.ToArray()));
+					var mailsQuery = await singleTaskQueue.Enqueue(() => this.portalRepository.GetQueryable(filterExpression: filterExpression, includeDepth: 2, dataPagination: new DataPagination() { PageSize = SelectedPage.PageSize, PageIndex = SelectedPage.PageIndex }, dataSorts: dataSorts.ToArray()));
+					Mails = await singleTaskQueue.Enqueue(() => mailsQuery.Select(m => new SmtpMail() { Id = m.Id, Guid = m.Guid, Subject = m.Subject, DateCreated = m.DateCreated, From = m.From, To = m.To, CC = m.CC }).ToListAsync());
 
 					IsDataLoaded = true;
 					HasSelectedFilter = this.SelectedFilterAny();
@@ -432,7 +440,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 					if (await singleTaskQueue.Enqueue(() => this.portalRepository.SaveChangesAsync()))
 					{
-						Mails?.Insert(0, model);
+						Mails?.Remove(model);
 
 						IsBusy = false;
 						StateHasChanged();

@@ -40,10 +40,44 @@
 	font-family: FontAwesome;
 }
 
+.gjs-btn-prim {
+	background-color: #f5f5f5;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 rgba(0,0,0,.15);
+	transition: box-shadow,color .2s ease 0s;
+	color: #373d49;
+	margin-top: 5px;
+	padding: 5px;
+}
+
+.gjs-btn-prim:active, .gjs-btn-prim:hover {
+	color: var(--mdc-theme-primary, #6200ee);
+	background-color: #f5f5f5;
+}
+
 .gjs-mdl-container {
-	z-index: 101;
+	z-index: 1040;
+	background-color: rgba(255, 255, 255, 0.75);
 }
 
 .gjs-mdl-dialog {
 	background-color: #ffffff;
+	box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0,0,0,.12);
+}
+
+.gjs-asset-manager {
+	display: flex;
+}
+
+.gjs-am-file-uploader form {
+	height: 100%;
+}
+
+.gjs-am-assets-cont {
+	height: 100%;
+}
+
+.gjs-am-add-asset .gjs-btn-prim {
+	margin: 0;
+	font-size: 12px;
 }

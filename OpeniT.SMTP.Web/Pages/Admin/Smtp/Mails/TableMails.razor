@@ -72,28 +72,35 @@
 					<table class="table table-valign-middle">
 						<thead>
 							<MatSortHeaderRow SortId="@ManageMails.SelectedSort.SortId" Direction="@ManageMails.SelectedSort.Direction" SortChanged="@this.SortChanged">
-								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="Subject" nowrap>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="Subject" nowrap>
 									<span>Subject</span>
 									@{
 										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "Subject");
 										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
-								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="From" nowrap>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="Date" nowrap>
+									<span>Date</span>
+									@{
+										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "Date");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+									}
+								</MatSortHeader>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="From" nowrap>
 									<span>From</span>
 									@{
 										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "From");
 										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
-								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="To" nowrap>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="To" nowrap>
 									<span>To</span>
 									@{
 										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "To");
 										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
-								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 25%; min-width: 100px; padding-right: 35px;" SortId="CC" nowrap>
+								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="CC" nowrap>
 									<span>CC</span>
 									@{
 										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "CC");
@@ -116,6 +123,7 @@
 												</div>
 											</div>
 										</td>
+										<td>@mail?.DateCreated.ToSqlDateString()</td>
 										<td>@mail?.From?.Address</td>
 										<td class="position-relative line-height-1" nowrap>
 											@if (!Enumerable.Any(mail?.To ?? Enumerable.Empty<SmtpMailAddress>()))

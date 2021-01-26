@@ -41,15 +41,15 @@
 							{
 								var model = editContext.Model as SmtpMail;
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="this.MailFromChanged" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="From * " Class="hide-validation-line full-width m-0"></MatTextField>
+									<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="e => this.MailFromChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="From * " Class="hide-validation-line full-width m-0"></MatTextField>
 									<CustomValidationMessage For="@(() => model.From.Address)" RemoteValidatorFuncs="@fromValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailToTextField" @bind-Value="@mailTo" OnInput="this.MailToChanged" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<MatTextField @ref="@MailToTextField" @bind-Value="@mailTo" OnInput="e => this.MailToChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
 									<CustomValidationMessage For="@(() => model.To)" RemoteValidatorFuncs="@toValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailCCTextField" @bind-Value="@mailCC" OnInput="this.MailCcChanged" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="CC" Class="hide-validation-line full-width m-0"></MatTextField>
+									<MatTextField @ref="@MailCCTextField" @bind-Value="@mailCC" OnInput="e => this.MailCcChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="CC" Class="hide-validation-line full-width m-0"></MatTextField>
 									<CustomValidationMessage For="@(() => model.CC)" RemoteValidatorFuncs="@ccValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">

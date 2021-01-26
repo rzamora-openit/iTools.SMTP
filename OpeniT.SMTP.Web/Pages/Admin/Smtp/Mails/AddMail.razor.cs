@@ -82,43 +82,24 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		{
 			if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailFromTextField?.Ref))
 			{
-				model.From = model.From ?? new SmtpMailAddress();
-				model.From.Address = mailAddress;
-
 				mailFrom = mailAddress;
-				editContext.NotifyFieldChanged(() => model.From.Address);
+				this.MailFromChanged(mailFrom);
 			}
 			else if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailToTextField?.Ref))
 			{
-				var toAddress = model.To?.LastOrDefault();
-				if (toAddress != null)
-				{
-					toAddress.Address = mailAddress;
-				}
-				else
-				{
-					model.To = model.To ?? new List<SmtpMailAddress>();
-					model.To.Add(new SmtpMailAddress() { Address = mailAddress });
-				}
+				mailTo = mailTo ?? string.Empty;
 
-				mailTo = string.Join(", ", model?.To?.Select(to => to?.Address) ?? Enumerable.Empty<string>());
-				editContext.NotifyFieldChanged(() => model.To);
+				var mailToSubstr = mailTo.Substring(0, mailTo.LastIndexOf(',') + 1);
+				mailTo = $"{mailToSubstr}{(string.IsNullOrWhiteSpace(mailToSubstr) ? string.Empty : " ")}{mailAddress}";
+				this.MailToChanged(mailTo);
 			}
 			else if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailCCTextField?.Ref))
 			{
-				var ccAddress = model.CC?.LastOrDefault();
-				if (ccAddress != null)
-				{
-					ccAddress.Address = mailAddress;
-				}
-				else
-				{
-					model.CC = model.CC ?? new List<SmtpMailAddress>();
-					model.CC.Add(new SmtpMailAddress() { Address = mailAddress });
-				}
+				mailCC = mailCC ?? string.Empty;
 
-				mailCC = string.Join(", ", model?.CC?.Select(cc => cc?.Address) ?? Enumerable.Empty<string>());
-				editContext.NotifyFieldChanged(() => model.CC);
+				var mailCCSubstr = mailCC.Substring(0, mailCC.LastIndexOf(',') + 1);
+				mailCC = $"{mailCCSubstr}{(string.IsNullOrWhiteSpace(mailCCSubstr) ? string.Empty : " ")}{mailAddress}";
+				this.MailCcChanged(mailCC);
 			}
 		}
 
@@ -142,28 +123,22 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			}
 		}
 
-		private void MailFromChanged(ChangeEventArgs e)
+		private void MailFromChanged(string value)
 		{
-			var value = e.Value.ToString();
-
 			model.From = model.From ?? new SmtpMailAddress();
 			model.From.Address = value;
 			editContext.NotifyFieldChanged(() => model.From.Address);
 		}
 
-		private void MailToChanged(ChangeEventArgs e)
+		private void MailToChanged(string value)
 		{
-			var value = e.Value.ToString();
-
-			model.To = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Select(to => new SmtpMailAddress() { Address = to }).ToList();
+			model.To = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Where(to => !string.IsNullOrWhiteSpace(to)).Select(to => new SmtpMailAddress() { Address = to }).ToList();
 			editContext.NotifyFieldChanged(() => model.To);
 		}
 
-		private void MailCcChanged(ChangeEventArgs e)
+		private void MailCcChanged(string value)
 		{
-			var value = e.Value.ToString();
-
-			model.CC = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Select(cc => new SmtpMailAddress() { Address = cc }).ToList();
+			model.CC = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Where(cc => !string.IsNullOrWhiteSpace(cc)).Select(cc => new SmtpMailAddress() { Address = cc }).ToList();
 			editContext.NotifyFieldChanged(() => model.CC);
 		}
 

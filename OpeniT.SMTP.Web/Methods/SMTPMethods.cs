@@ -15,26 +15,31 @@ namespace OpeniT.SMTP.Web.Methods
 	public class SMTPMethods
 	{
 		private readonly IConfiguration configuration;
-		private readonly SmtpClient smtpClient;
 
 		public SMTPMethods(IConfigurationRoot configuration)
 		{
 			this.configuration = configuration;
-			this.smtpClient = new SmtpClient()
-			{
-				Host = this.configuration.GetValue<string>("SMTP:Host"),
-				Port = this.configuration.GetValue<int>("SMTP:Port"),
-				EnableSsl = true,
-				DeliveryMethod = SmtpDeliveryMethod.Network,
-				UseDefaultCredentials = true
-			};
 		}
 
 		public async Task<bool> SendMail(MailMessage mailMessage)
 		{
 			try
 			{
-				await this.smtpClient.SendMailAsync(mailMessage);
+				using var smtpClient = new SmtpClient()
+				{
+					Host = this.configuration.GetValue<string>("SMTP:Host"),
+					Port = this.configuration.GetValue<int>("SMTP:Port"),
+					EnableSsl = true,
+					DeliveryMethod = SmtpDeliveryMethod.Network,
+					UseDefaultCredentials = false,
+					Credentials = new NetworkCredential()
+					{
+						UserName = this.configuration.GetValue<string>("SMTP:Username"),
+						Password = this.configuration.GetValue<string>("SMTP:Password"),
+					}
+				};
+
+				await smtpClient.SendMailAsync(mailMessage);
 
 				return true;
 			}
@@ -51,7 +56,7 @@ namespace OpeniT.SMTP.Web.Methods
 			try
 			{
 				var mailMessage = new MailMessage();
-				mailMessage.From = new MailAddress(mail?.From?.Address ?? "grodriguez@openit.com", mail?.From?.DisplayName ?? "grodriguez@openit.com");
+				mailMessage.From = new MailAddress(mail?.From?.Address, mail?.From?.DisplayName);
 				mailMessage.Subject = mail?.Subject;
 
 				if (isBodyHTML)
@@ -99,21 +104,24 @@ namespace OpeniT.SMTP.Web.Methods
 					{
 						string src = image.GetAttributeValue("src", null);
 
-						if (Uri.TryCreate(src, UriKind.Absolute, out Uri srcUri))
+						if (src?.StartsWith("data:") != true)
 						{
-							if (srcUri.Scheme != Uri.UriSchemeHttp && srcUri.Scheme != Uri.UriSchemeHttps)
+							if (Uri.TryCreate(src, UriKind.Absolute, out Uri srcUri))
 							{
-								src = src.StartsWith("//") ? $"http:{src}" : $"http://{src}";
-							}
+								if (srcUri.Scheme != Uri.UriSchemeHttp && srcUri.Scheme != Uri.UriSchemeHttps)
+								{
+									src = src.StartsWith("//") ? $"http:{src}" : $"http://{src}";
+								}
 
-							using (WebClient client = new WebClient())
-							using (Stream stream = await client.OpenReadTaskAsync(src))
-							{
-								LinkedResource linkedResource = new LinkedResource(contentStream: stream, mediaType: MediaTypeNames.Image.Jpeg);
-								linkedResource.ContentId = Guid.NewGuid().ToString();
-								avHtml.LinkedResources.Add(linkedResource);
+								using (WebClient client = new WebClient())
+								using (Stream stream = await client.OpenReadTaskAsync(src))
+								{
+									LinkedResource linkedResource = new LinkedResource(contentStream: stream, mediaType: MediaTypeNames.Image.Jpeg);
+									linkedResource.ContentId = Guid.NewGuid().ToString();
+									avHtml.LinkedResources.Add(linkedResource);
 
-								image.SetAttributeValue("src", src);
+									image.SetAttributeValue("src", src);
+								}
 							}
 						}
 					}
@@ -128,7 +136,6 @@ namespace OpeniT.SMTP.Web.Methods
 					mailMessage.IsBodyHtml = false;
 				}
 
-				mailMessage.To.Add(new MailAddress("grodriguez@openit.com", "grodriguez@openit.com"));
 				foreach (var mailTo in mail?.To ?? Enumerable.Empty<SmtpMailAddress>())
 				{
 					mailMessage.To.Add(new MailAddress(mailTo?.Address, mailTo?.DisplayName));

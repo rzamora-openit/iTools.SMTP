@@ -88,8 +88,8 @@ namespace OpeniT.SMTP.Web.Pages.Admin
         };
         private MatSortChangedEvent selectedSort = new MatSortChangedEvent()
         {
-            Direction = MatSortDirection.Asc,
-            SortId = "Name"
+            Direction = MatSortDirection.Desc,
+            SortId = "Date"
         };
         #endregion Filters
 
@@ -228,20 +228,20 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
                     switch (SelectedSort.SortId)
                     {
-                        case "Subject":
-                        default:
-                            dataSorts.Add(new DataSort<SmtpMail, object>()
-                            {
-                                OrderExpression = m => m.Subject
-                            });
-                            break;
                         case "Date":
+                        default:
                             dataSorts.Add(new DataSort<SmtpMail, object>()
                             {
                                 OrderExpression = m => m.DateCreated
                             });
                             break;
                         case "Body":
+                        case "Subject":
+                            dataSorts.Add(new DataSort<SmtpMail, object>()
+                            {
+                                OrderExpression = m => m.Subject
+                            });
+                            break;
                             dataSorts.Add(new DataSort<SmtpMail, object>()
                             {
                                 OrderExpression = m => m.Body
@@ -271,6 +271,16 @@ namespace OpeniT.SMTP.Web.Pages.Admin
                             dataSorts.Add(new DataSort<SmtpMail, object>()
                             {
                                 OrderExpression = m => m.CC.Any() ? m.CC.OrderBy(cc => cc.Address).Last().Address : null
+                            });
+                            break;
+                        case "BCC":
+                            dataSorts.Add(new DataSort<SmtpMail, object>()
+                            {
+                                OrderExpression = m => m.BCC.Any() ? m.BCC.OrderBy(bcc => bcc.Address).First().Address : null
+                            });
+                            dataSorts.Add(new DataSort<SmtpMail, object>()
+                            {
+                                OrderExpression = m => m.BCC.Any() ? m.BCC.OrderBy(bcc => bcc.Address).Last().Address : null
                             });
                             break;
                     }
@@ -354,7 +364,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
             }
             else
             {
-                selectedSort.SortId = "Name";
+                selectedSort.SortId = "Date";
             }
 
             if (!string.IsNullOrWhiteSpace(sortDirectionQueryString))
@@ -363,7 +373,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
             }
             else
             {
-                selectedSort.Direction = MatSortDirection.Asc;
+                selectedSort.Direction = MatSortDirection.Desc;
             }
         }
 

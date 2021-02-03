@@ -148,6 +148,11 @@ namespace OpeniT.SMTP.Web.Methods
 					mailMessage.CC.Add(new MailAddress(mailCC?.Address, mailCC?.DisplayName));
 				}
 
+				foreach (var mailBCC in mail?.BCC ?? Enumerable.Empty<SmtpMailAddress>())
+				{
+					mailMessage.Bcc.Add(new MailAddress(mailBCC?.Address, mailBCC?.DisplayName));
+				}
+
 				return await this.SendMail(mailMessage);
 			}
 			catch (Exception ex)

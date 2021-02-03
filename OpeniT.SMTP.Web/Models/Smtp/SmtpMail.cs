@@ -13,5 +13,6 @@ namespace OpeniT.SMTP.Web.Models
 		public bool IsBodyHtml { get; set; }
 		public ICollection<SmtpMailAddress> To { get; set; } = new List<SmtpMailAddress>();
 		public ICollection<SmtpMailAddress> CC { get; set; } = new List<SmtpMailAddress>();
+		public ICollection<SmtpMailAddress> BCC { get; set; } = new List<SmtpMailAddress>();
 	}
 }

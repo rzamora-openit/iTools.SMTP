@@ -38,9 +38,15 @@
 							@if (context?.Model?.GetType() == typeof(SmtpMail))
 							{
 								var model = editContext.Model as SmtpMail;
-								<div class="form-group position-relative">
-									<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="e => this.MailFromChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy" Label="From * " Class="hide-validation-line full-width m-0"></MatTextField>
-									<CustomValidationMessage For="@(() => model.From.Address)" RemoteValidatorFuncs="@fromValidators" Class="@(this.IsMailAddressMenuOpen(MailFromTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
+								<div class="form-group d-flex align-items-center">
+									<div class="flex-basis-50 position-relative pr-2">
+										<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="e => this.MailFromChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy" Label="From Email * " Class="hide-validation-line full-width m-0"></MatTextField>
+										<CustomValidationMessage For="@(() => model.From.Address)" RemoteValidatorFuncs="@fromValidators" Class="@(this.IsMailAddressMenuOpen(MailFromTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
+									</div>
+									<div class="flex-basis-50 position-relative pl-2">
+										<MatTextField @bind-Value="model.From.DisplayName" Disabled="isBusy" Label="From Display Name" Class="hide-validation-line full-width m-0"></MatTextField>
+										<CustomValidationMessage For="@(() => model.From.DisplayName)" Style="min-width: unset;"></CustomValidationMessage>
+									</div>
 								</div>
 								<div class="form-group position-relative">
 									<MatTextField @ref="@MailToTextField" @bind-Value="@mailTo" OnInput="e => this.MailToChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" Disabled="isBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
@@ -51,12 +57,16 @@
 									<CustomValidationMessage For="@(() => model.CC)" RemoteValidatorFuncs="@ccValidators" Class="@(this.IsMailAddressMenuOpen(MailCCTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
+									<MatTextField @ref="@MailBCCTextField" @bind-Value="@mailBCC" OnInput="e => this.MailBccChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailBCCTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailBCCTextField.Ref)" Disabled="isBusy" Label="BCC" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.BCC)" RemoteValidatorFuncs="@bccValidators" Class="@(this.IsMailAddressMenuOpen(MailBCCTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
 									<MatTextField @bind-Value="@model.Subject" Disabled="this.isBusy" Label="Subject *" Class="hide-validation-line full-width m-0"></MatTextField>
 									<CustomValidationMessage For="@(() => model.Subject)" RemoteValidatorFuncs="@subjectValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
 									<label class="w-100 m-0">Body Format *</label>
-									<MatRadioGroup @bind-Value="@model.IsBodyHtml">
+									<MatRadioGroup Value="@model.IsBodyHtml" ValueChanged="(bool value) => { model.Body = null; model.IsBodyHtml = value; }" ValueExpression="() => model.IsBodyHtml">
 										<MatRadioButton Value="false" Label="Plain Text" Class="pr-1 pl-0"></MatRadioButton>
 										<MatRadioButton Value="true" Label="Html" Class="pr-1"></MatRadioButton>
 									</MatRadioGroup>
@@ -73,12 +83,12 @@
 												</div>
 											</IsBusyContent>
 										</GrapesjsEditor>
-										<CustomValidationMessage For="@(() => model.Body)" RemoteValidatorFuncs="@bodyValidators" Style="min-width: unset;"></CustomValidationMessage>
 									}
 									else
 									{
-										<MatTextField @bind-Value="@model.Body" Disabled="this.isBusy" Label="Place Body" TextArea="true" Class="hide-validation-line full-width h-100 m-0" Style="min-height: 10rem"></MatTextField>
+										<MatTextField @bind-Value="@model.Body" Disabled="this.isBusy" Label="Place Body * " TextArea="true" Class="hide-validation-line full-width h-100 m-0" Style="min-height: 10rem"></MatTextField>
 									}
+									<CustomValidationMessage For="@(() => model.Body)" RemoteValidatorFuncs="@bodyValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 							}
 						</CustomRemoteValidator>

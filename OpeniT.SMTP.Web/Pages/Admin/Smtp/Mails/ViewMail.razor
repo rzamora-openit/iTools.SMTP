@@ -1,6 +1,6 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!isBusy" SurfaceStyle="width: 80rem">
+<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!isBusy">
 	<MatDialogTitle Class="justify-content-between border-bottom">
 		<div class="d-flex align-items-center" style="min-width: 0;">
 			<MatIconButton Class="close-button" Disabled="isBusy" Icon="close" OnClick="this.Close"></MatIconButton>
@@ -38,7 +38,7 @@
 							}
 							else
 							{
-								@mail.From.Address
+								@mail.From.Address @(!string.IsNullOrWhiteSpace(mail?.From?.DisplayName) ? $"<{mail?.From?.DisplayName}>" : string.Empty)
 							}
 						</dd>
 					</dl>
@@ -55,7 +55,7 @@
 							}
 							else
 							{
-								@string.Join(", ", mail.To.Select(to => to.Address).OrderBy(a => a))
+								@string.Join(", ", mail.To.Select(to => to?.Address).OrderBy(a => a))
 							}
 						</dd>
 					</dl>
@@ -72,7 +72,24 @@
 							}
 							else
 							{
-								@string.Join(", ", mail.CC.Select(cc => cc.Address).OrderBy(a => a))
+								@string.Join(", ", mail.CC.Select(cc => cc?.Address).OrderBy(a => a))
+							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>BCC</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (!Enumerable.Any(mail?.BCC ?? Enumerable.Empty<SmtpMailAddress>()))
+							{
+								<div class="dashed pl-4 pr-4"></div>
+							}
+							else
+							{
+								@string.Join(", ", mail.BCC.Select(bcc => bcc?.Address).OrderBy(a => a))
 							}
 						</dd>
 					</dl>
@@ -105,33 +122,32 @@
 					</dl>
 				</div>
 			</div>
-			<div class="d-flex flex-column flex-basis-100">
-				<MatAccordion Multi="true">
-					<MatExpansionPanel Expanded="true">
-						<MatExpansionPanelSummary Class="bg-mdc-gray">
-							<MatExpansionPanelHeader Class="font-weight-bold flex-grow-1">Body</MatExpansionPanelHeader>
-						</MatExpansionPanelSummary>
-						<MatExpansionPanelDetails Class="p-0">
-							@if (!string.IsNullOrWhiteSpace(mail?.Body))
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>Body</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@if (string.IsNullOrWhiteSpace(mail?.Body))
 							{
-								if (mail?.IsBodyHtml == true)
-								{
-									<iframe style="min-height: 900px; width: 100%;" srcdoc="@mail.Body"></iframe>
-								}
-								else
-								{
-									<span>@mail.Body</span>
-								}
+								<div class="dashed pl-4 pr-4"></div>
 							}
 							else
 							{
-								<div class="markup-string position-relative p-4">
-									<div class="dashed pl-4 pr-4"></div>
-								</div>
+								if (!string.IsNullOrWhiteSpace(mail?.Body))
+								{
+									if (mail?.IsBodyHtml == true)
+									{
+										<iframe style="min-width: 80rem; min-height: 900px; width: 100%;" srcdoc="@mail.Body"></iframe>
+									}
+									else
+									{
+										@mail.Body
+									}
+								}
 							}
-						</MatExpansionPanelDetails>
-					</MatExpansionPanel>
-				</MatAccordion>
+						</dd>
+					</dl>
+				</div>
 			</div>
 		</div>
 	</MatDialogContent>

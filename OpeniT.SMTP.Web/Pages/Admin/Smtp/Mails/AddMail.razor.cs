@@ -41,6 +41,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		private string mailFrom;
 		private string mailTo;
 		private string mailCC;
+		private string mailBCC;
 
 		private GrapesjsEditor grapesjsEditor;
 		private CancellationTokenSource grapesjsEditorValueCts;
@@ -48,6 +49,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		private MatTextField<string> MailFromTextField;
 		private MatTextField<string> MailToTextField;
 		private MatTextField<string> MailCCTextField;
+		private MatTextField<string> MailBCCTextField;
 		private Menu MailAddressesMenu;
 		private string mailAddressesSearchText => 
 			ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailFromTextField?.Ref)
@@ -56,7 +58,9 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				? model?.To?.LastOrDefault()?.Address
 				: ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailCCTextField?.Ref)
 					? model?.CC?.LastOrDefault()?.Address
-					: null;
+					: ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailBCCTextField?.Ref)
+						? model?.BCC?.LastOrDefault()?.Address 
+						: null;
 
 		#region SiteValues
 		private List<AzureProfile> Profiles = new List<AzureProfile>();
@@ -153,6 +157,14 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				mailCC = $"{mailCCSubstr}{(string.IsNullOrWhiteSpace(mailCCSubstr) ? string.Empty : " ")}{mailAddress}";
 				this.MailCcChanged(mailCC);
 			}
+			else if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailBCCTextField?.Ref))
+			{
+				mailBCC = mailBCC ?? string.Empty;
+
+				var mailBCCSubstr = mailBCC.Substring(0, mailBCC.LastIndexOf(',') + 1);
+				mailBCC = $"{mailBCCSubstr}{(string.IsNullOrWhiteSpace(mailBCCSubstr) ? string.Empty : " ")}{mailAddress}";
+				this.MailBccChanged(mailBCC);
+			}
 		}
 
 		private bool IsMailAddressMenuOpen(ElementReference? element)
@@ -171,6 +183,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				mailFrom = null;
 				mailTo = null;
 				mailCC = null;
+				mailBCC = null;
 
 				editContext = new EditContext(model);
 			}
@@ -184,7 +197,9 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		{
 			model.From = model.From ?? new SmtpMailAddress();
 			model.From.Address = value;
+			model.From.DisplayName = Profiles?.FirstOrDefault(p => p.Mail == value)?.DisplayName;
 			editContext.NotifyFieldChanged(() => model.From.Address);
+			editContext.NotifyFieldChanged(() => model.From.DisplayName);
 		}
 
 		private void MailToChanged(string value)
@@ -197,6 +212,12 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		{
 			model.CC = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Where(cc => !string.IsNullOrWhiteSpace(cc)).Select(cc => new SmtpMailAddress() { Address = cc }).ToList();
 			editContext.NotifyFieldChanged(() => model.CC);
+		}
+
+		private void MailBccChanged(string value)
+		{
+			model.BCC = string.IsNullOrWhiteSpace(value) ? new List<SmtpMailAddress>() : Regex.Replace(value, @"\s+", "").Split(",").Where(bcc => !string.IsNullOrWhiteSpace(bcc)).Select(bcc => new SmtpMailAddress() { Address = bcc }).ToList();
+			editContext.NotifyFieldChanged(() => model.BCC);
 		}
 
 		private HashSet<Func<object, Task<ValidationResult>>> fromValidators =>
@@ -251,7 +272,21 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		private Task<ValidationResult> CcIsValid(object value)
 		{
 			var cc = value as ICollection<SmtpMailAddress>;
-			var notValidAddress = cc?.FirstOrDefault(c => !(new EmailAddressAttribute().IsValid(c?.Address)));
+			var notValidAddress = cc?.FirstOrDefault(e => !(new EmailAddressAttribute().IsValid(e?.Address)));
+			if (notValidAddress != null)
+			{
+				return Task.FromResult(new ValidationResult($"{notValidAddress?.Address} is not a valid email address."));
+			}
+
+			return Task.FromResult(ValidationResult.Success);
+		}
+
+		private HashSet<Func<object, Task<ValidationResult>>> bccValidators =>
+			new HashSet<Func<object, Task<ValidationResult>>>() { BccIsValid };
+		private Task<ValidationResult> BccIsValid(object value)
+		{
+			var bcc = value as ICollection<SmtpMailAddress>;
+			var notValidAddress = bcc?.FirstOrDefault(e => !(new EmailAddressAttribute().IsValid(e?.Address)));
 			if (notValidAddress != null)
 			{
 				return Task.FromResult(new ValidationResult($"{notValidAddress?.Address} is not a valid email address."));

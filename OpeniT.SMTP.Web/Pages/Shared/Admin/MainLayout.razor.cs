@@ -17,7 +17,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 {
 	public partial class MainLayout : LayoutComponentBase, IDisposable
 	{
-		[Inject] private IPortalRepository portalRepository { get; set; }
+		[Inject] private IDataRepository portalRepository { get; set; }
 		[Inject] private IJSRuntime jsRuntime { get; set; }
 		[Inject] private ILocalStorageService localStorage { get; set; }
 		[Inject] private NavigationManager navigationManager { get; set; }

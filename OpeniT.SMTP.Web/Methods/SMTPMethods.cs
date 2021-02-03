@@ -29,7 +29,7 @@ namespace OpeniT.SMTP.Web.Methods
 				{
 					Host = this.configuration.GetValue<string>("SMTP:Host"),
 					Port = this.configuration.GetValue<int>("SMTP:Port"),
-					EnableSsl = true,
+					EnableSsl = false,
 					DeliveryMethod = SmtpDeliveryMethod.Network,
 					UseDefaultCredentials = false,
 					Credentials = new NetworkCredential()
@@ -51,15 +51,17 @@ namespace OpeniT.SMTP.Web.Methods
 			return false;
 		}
 
-		public async Task<bool> SendMail(SmtpMail mail, bool isBodyHTML = true)
+		public async Task<bool> SendMail(SmtpMail mail)
 		{
+			if (mail == null) return false;
+
 			try
 			{
 				var mailMessage = new MailMessage();
 				mailMessage.From = new MailAddress(mail?.From?.Address, mail?.From?.DisplayName);
 				mailMessage.Subject = mail?.Subject;
 
-				if (isBodyHTML)
+				if (mail.IsBodyHtml)
 				{
 					var htmlDoc = new HtmlDocument();
 					htmlDoc.LoadHtml(mail?.Body);

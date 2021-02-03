@@ -1,12 +1,12 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-@if (ManageMails.IsBusy)
+@if (isBusy)
 {
-	<div class="@(Shown && ManageMails.GetVisibleComponents().Count() == 1 ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
+	<div class="@(IsOpen ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
 		<MatProgressBar Style="position: fixed; top: calc(3.5rem + 1px);" Indeterminate="true"></MatProgressBar>
 	</div>
 }
-<div class="@(Shown ? "animateFadeIn" : "d-none")">
+<div class="@(IsOpen ? "animateFadeIn" : "d-none")">
 	<section class="content-header position-sticky">
 		<div class="container-fluid d-flex align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
 			@if (siteCascadingValue?.BrowserSizeState?.SmallDown == true)
@@ -29,8 +29,8 @@
 						</ButtonContent>
 						<MenuContent Context="menu">
 							<div class="mdc-text-field-clear-group p-2">
-								<MatTextField Class="full-width dense--5 m-0" ValueChanged="@(async (string e) => { await menu.CloseAsync(); await this.SearchChanged(e); })" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@ManageMails.SearchValue" Icon="search"></MatTextField>
-								@if (!string.IsNullOrWhiteSpace(ManageMails.SearchValue) || !string.IsNullOrWhiteSpace(_searchValue))
+								<MatTextField Class="full-width dense--5 m-0" ValueChanged="@(async (string e) => { await menu.CloseAsync(); await this.SearchChanged(e); })" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
+								@if (!string.IsNullOrWhiteSpace(searchValue) || !string.IsNullOrWhiteSpace(_searchValue))
 								{
 									<MatIcon Class="clear-button" Icon="close" @onclick="async () => { await menu.CloseAsync(); await this.SearchChanged(null); }"></MatIcon>
 								}
@@ -47,8 +47,8 @@
 						<span class="text-lg text-bold ml-1">Mails</span>
 					</div>
 					<div class="mdc-text-field-clear-group pl-3">
-						<MatTextField Style="width: 20rem;" Class="dense--5 m-0" ValueChanged="@((string e) => this.SearchChanged(e))" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@ManageMails.SearchValue" Icon="search"></MatTextField>
-						@if (!string.IsNullOrWhiteSpace(ManageMails.SearchValue) || !string.IsNullOrWhiteSpace(_searchValue))
+						<MatTextField Style="width: 20rem;" Class="dense--5 m-0" ValueChanged="@((string e) => this.SearchChanged(e))" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
+						@if (!string.IsNullOrWhiteSpace(searchValue) || !string.IsNullOrWhiteSpace(_searchValue))
 						{
 							<MatIcon Class="clear-button" Icon="close" @onclick="() => this.SearchChanged(null)"></MatIcon>
 						}
@@ -56,7 +56,7 @@
 				</div>
 				<div class="text-right">
 					<NavLink href="/smtp/mails/add">
-						<MatButton Unelevated="true" Icon="library_add" Class="ml-1">Add Mail</MatButton>
+						<MatButton Unelevated="true" Icon="library_add">Add Mail</MatButton>
 					</NavLink>
 				</div>
 			}
@@ -65,55 +65,55 @@
 	<section class="content bg-white p-0">
 		<div class="container-fluid p-0">
 			<div class="d-flex flex-wrap align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
-				<Paginator Class="d-flex justify-content-end flex-grow-1" Length="@ManageMails.SelectedPage.Length" PageSize="ManageMails.SelectedPage.PageSize" PageIndex="ManageMails.SelectedPage.PageIndex" Page="@this.PaginationChanged" Summarized="siteCascadingValue?.BrowserSizeState?.SmallDown == true"></Paginator>
+				<Paginator Class="d-flex justify-content-end flex-grow-1" Length="@selectedPage.Length" PageSize="selectedPage.PageSize" PageIndex="selectedPage.PageIndex" Page="@this.PaginationChanged" Summarized="siteCascadingValue?.BrowserSizeState?.SmallDown == true"></Paginator>
 			</div>
 			<div class="position-relative pl-responsive pr-responsive">
 				<div class="table-responsive">
 					<table class="table table-valign-middle">
 						<thead>
-							<MatSortHeaderRow SortId="@ManageMails.SelectedSort.SortId" Direction="@ManageMails.SelectedSort.Direction" SortChanged="@this.SortChanged">
+							<MatSortHeaderRow SortId="@selectedSort.SortId" Direction="@selectedSort.Direction" SortChanged="@this.SortChanged">
 								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="Subject" nowrap>
 									<span>Subject</span>
 									@{
-										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "Subject");
-										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+										var isSorted = string.Equals(selectedSort.SortId, "Subject");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && selectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
 								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="Date" nowrap>
 									<span>Date</span>
 									@{
-										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "Date");
-										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+										var isSorted = string.Equals(selectedSort.SortId, "Date");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && selectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
 								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="From" nowrap>
 									<span>From</span>
 									@{
-										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "From");
-										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+										var isSorted = string.Equals(selectedSort.SortId, "From");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && selectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
 								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="To" nowrap>
 									<span>To</span>
 									@{
-										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "To");
-										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+										var isSorted = string.Equals(selectedSort.SortId, "To");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && selectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
 								<MatSortHeader Class="@($"text-gray hidden-arrow border-bottom-0 position-relative")" Style="width: 20%; min-width: 100px; padding-right: 35px;" SortId="CC" nowrap>
 									<span>CC</span>
 									@{
-										var isSorted = string.Equals(ManageMails.SelectedSort.SortId, "CC");
-										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && ManageMails.SelectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
+										var isSorted = string.Equals(selectedSort.SortId, "CC");
+										<MatIconButton Class="@($"mat-sort-header-icon-button rounded {(isSorted ? "opacity-1" : string.Empty)}")" Style="position: absolute; right: 0; width: 30px; height: 30px;" Icon="@($"{(isSorted && selectedSort.Direction == MatSortDirection.Desc ? "arrow_upward" : "arrow_downward")}")"></MatIconButton>
 									}
 								</MatSortHeader>
 								<th class="bg-white text-right position-sticky border-bottom-0" style="right: 0;" nowrap><span class="text-gray">Actions</span></th>
 							</MatSortHeaderRow>
 						</thead>
 						<tbody>
-							@if (Enumerable.Any(ManageMails.Mails ?? Enumerable.Empty<SmtpMail>()))
+							@if (Mails?.Any() == true)
 							{
-								@foreach (var mail in ManageMails.Mails ?? Enumerable.Empty<SmtpMail>())
+								@foreach (var mail in Mails)
 								{
 									<tr>
 										<td>
@@ -181,9 +181,9 @@
 									</tr>
 								}
 							}
-							else if (!Enumerable.Any(ManageMails.Mails ?? Enumerable.Empty<SmtpMail>()))
+							else
 							{
-								if (ManageMails.IsBusy)
+								if (isBusy)
 								{
 									<tr>
 										<td class="text-center" colspan="100%">
@@ -191,12 +191,12 @@
 										</td>
 									</tr>
 								}
-								else if (ManageMails.IsDataLoaded)
+								else if (isDataLoaded)
 								{
 									<tr>
 										<td class="text-center" colspan="100%">
 											<img src="images/fallback/page-not-found-icon.png" style="padding: 8px; width: 100%; height: 100%; object-fit: scale-down;">
-											@if (ManageMails.HasSelectedFilter)
+											@if (this.SelectedFilterAny())
 											{
 												<span class="text-bold text-gray">No matching mail found</span>
 											}

@@ -1,24 +1,24 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!ManageMails.IsBusy" SurfaceStyle="width: 80rem">
+<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!isBusy" SurfaceStyle="width: 80rem">
 	<MatDialogTitle Class="justify-content-between border-bottom">
 		<div class="d-flex align-items-center" style="min-width: 0;">
-			<MatIconButton Class="close-button" Disabled="ManageMails.IsBusy" Icon="close" OnClick="this.Close"></MatIconButton>
-			<span class="text-title text-truncate @(ManageMails.IsBusy ? "text-disabled" : string.Empty)" data-toggle="tooltip" data-placement="top" title="@Mail?.Subject Details">@Mail?.Subject Details</span>
+			<MatIconButton Class="close-button" Disabled="isBusy" Icon="close" OnClick="this.Close"></MatIconButton>
+			<span class="text-title text-truncate @(isBusy ? "text-disabled" : string.Empty)" data-toggle="tooltip" data-placement="top" title="@mail?.Subject Details">@mail?.Subject Details</span>
 		</div>
 		<Dropdown FlipCornerHorizontally="true">
 			<ButtonContent>
-				<MatButton Disabled="ManageMails.IsBusy" Class="text-nowrap">
+				<MatButton Disabled="isBusy" Class="text-nowrap">
 					<span>Actions</span>
 					<i class="fas fa-caret-down ml-2"></i>
 				</MatButton>
 			</ButtonContent>
 			<MenuContent>
 				<MatList Class="accent-dark">
-					<NavLink href="@($"/smtp/mails/copy/{Mail?.Guid}")">
+					<NavLink href="@($"/smtp/mails/copy/{mail?.Guid}")">
 						<MatListItem><MatIcon Icon="file_copy"></MatIcon><span class="ml-2">Copy</span></MatListItem>
 					</NavLink>
-					<NavLink href="@($"/smtp/mails/delete/{Mail?.Guid}")">
+					<NavLink href="@($"/smtp/mails/delete/{mail?.Guid}")">
 						<MatListItem><MatIcon Icon="delete"></MatIcon><span class="ml-2">Delete</span></MatListItem>
 					</NavLink>
 				</MatList>
@@ -32,13 +32,13 @@
 					<dl class="mb-0">
 						<dt>From</dt>
 						<dd class="position-relative mb-0" style="min-height: 1.5rem">
-							@if (string.IsNullOrWhiteSpace(Mail?.From?.Address))
+							@if (string.IsNullOrWhiteSpace(mail?.From?.Address))
 							{
 								<div class="dashed pl-4 pr-4"></div>
 							}
 							else
 							{
-								@Mail.From.Address
+								@mail.From.Address
 							}
 						</dd>
 					</dl>
@@ -49,13 +49,13 @@
 					<dl class="mb-0">
 						<dt>To</dt>
 						<dd class="position-relative mb-0" style="min-height: 1.5rem">
-							@if (!Enumerable.Any(Mail?.To ?? Enumerable.Empty<SmtpMailAddress>()))
+							@if (!Enumerable.Any(mail?.To ?? Enumerable.Empty<SmtpMailAddress>()))
 							{
 								<div class="dashed pl-4 pr-4"></div>
 							}
 							else
 							{
-								@string.Join(", ", Mail.To.Select(to => to.Address).OrderBy(a => a))
+								@string.Join(", ", mail.To.Select(to => to.Address).OrderBy(a => a))
 							}
 						</dd>
 					</dl>
@@ -66,13 +66,13 @@
 					<dl class="mb-0">
 						<dt>CC</dt>
 						<dd class="position-relative mb-0" style="min-height: 1.5rem">
-							@if (!Enumerable.Any(Mail?.CC ?? Enumerable.Empty<SmtpMailAddress>()))
+							@if (!Enumerable.Any(mail?.CC ?? Enumerable.Empty<SmtpMailAddress>()))
 							{
 								<div class="dashed pl-4 pr-4"></div>
 							}
 							else
 							{
-								@string.Join(", ", Mail.CC.Select(cc => cc.Address).OrderBy(a => a))
+								@string.Join(", ", mail.CC.Select(cc => cc.Address).OrderBy(a => a))
 							}
 						</dd>
 					</dl>
@@ -83,14 +83,24 @@
 					<dl class="mb-0">
 						<dt>Subject</dt>
 						<dd class="position-relative mb-0" style="min-height: 1.5rem">
-							@if (string.IsNullOrWhiteSpace(Mail?.Subject))
+							@if (string.IsNullOrWhiteSpace(mail?.Subject))
 							{
 								<div class="dashed pl-4 pr-4"></div>
 							}
 							else
 							{
-								@Mail.Subject
+								@mail.Subject
 							}
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="d-flex flex-basis-100 pt-3 pb-3 border-bottom">
+				<div class="flex-basis-100">
+					<dl class="mb-0">
+						<dt>Body Format</dt>
+						<dd class="position-relative mb-0" style="min-height: 1.5rem">
+							@(mail?.IsBodyHtml == true ? "Html" : "Plain Text")
 						</dd>
 					</dl>
 				</div>
@@ -102,9 +112,16 @@
 							<MatExpansionPanelHeader Class="font-weight-bold flex-grow-1">Body</MatExpansionPanelHeader>
 						</MatExpansionPanelSummary>
 						<MatExpansionPanelDetails Class="p-0">
-							@if (!string.IsNullOrWhiteSpace(Mail?.Body))
+							@if (!string.IsNullOrWhiteSpace(mail?.Body))
 							{
-								<iframe style="min-height: 900px; width: 100%;" srcdoc="@Mail.Body"></iframe>
+								if (mail?.IsBodyHtml == true)
+								{
+									<iframe style="min-height: 900px; width: 100%;" srcdoc="@mail.Body"></iframe>
+								}
+								else
+								{
+									<span>@mail.Body</span>
+								}
 							}
 							else
 							{
@@ -118,7 +135,7 @@
 			</div>
 		</div>
 	</MatDialogContent>
-	@if (ManageMails.IsBusy)
+	@if (isBusy)
 	{
 		<MatProgressBar Indeterminate="true" Class="animate-on-bottom"></MatProgressBar>
 	}

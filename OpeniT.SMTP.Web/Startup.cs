@@ -48,10 +48,10 @@ namespace OpeniT.SMTP.Web
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddServerSideBlazor();
             services.AddSingleton(this.Configuration);
-            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("PortalConnection"), b => b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)), ServiceLifetime.Transient);
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("PortalConnection"), b => b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
-            services.AddTransient<IPortalRepository, PortalRepository>();
             services.AddTransient<AzureHelper>();
+            services.AddScoped<IDataRepository, DataRepository>();
             services.AddScoped<SMTPMethods>();
             services.AddScoped<HttpClient>();
             services.AddScoped<ResizeListener>();

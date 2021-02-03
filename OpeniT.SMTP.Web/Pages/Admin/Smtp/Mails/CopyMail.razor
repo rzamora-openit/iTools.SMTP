@@ -1,12 +1,12 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-@if (this.isBusy || ManageMails.IsBusy)
+@if (this.isBusy)
 {
-	<div class="@(Shown ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
+	<div class="@(IsOpen ? "overlay align-items-start" : "d-none")" style="top: 0; left: 0; ">
 		<MatProgressBar Style="position: fixed; top: calc(3.5rem + 1px);" Indeterminate="true"></MatProgressBar>
 	</div>
 }
-<div class="@(Shown ? "animateFadeIn" : "d-none")" style="min-height: inherit; background-color: #eee;">
+<div class="@(IsOpen ? "animateFadeIn" : "d-none")" style="min-height: inherit; background-color: #eee;">
 	<section class="content-header position-sticky">
 		<div class="container-fluid d-flex align-items-center justify-content-between pt-2 pb-2 pl-responsive pr-responsive">
 			<div class="d-flex align-items-center">
@@ -19,10 +19,8 @@
 				</div>
 			</div>
 			<div class="text-right">
-				<NavLink href="@(ManageMails.CurrentFiltersUri)">
-					<MatButton Disabled="this.isBusy || ManageMails.IsBusy" Unelevated="true" Icon="chevron_left" Label="Back" Class="mdc-button-primary font-weight-normal mr-1"></MatButton>
-				</NavLink>
-				<MatButton Disabled="this.isBusy || ManageMails.IsBusy" Unelevated="true" OnClick="this.Save">
+				<MatButton Disabled="this.isBusy" Unelevated="true" OnClick="this.Close" Icon="chevron_left" Label="Back" Class="mdc-button-primary font-weight-normal"></MatButton>
+				<MatButton Disabled="this.isBusy" Unelevated="true" OnClick="this.Save">
 					<i class="mdc-button__icon fas m-0 @(this.isBusy ? "fa-circle-notch fa-spin" : "fa-save")"></i> <span class="ml-2">Send</span>
 				</MatButton>
 			</div>
@@ -41,34 +39,55 @@
 							{
 								var model = editContext.Model as SmtpMail;
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="e => this.MailFromChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="From * " Class="hide-validation-line full-width m-0"></MatTextField>
-									<CustomValidationMessage For="@(() => model.From.Address)" RemoteValidatorFuncs="@fromValidators" Style="min-width: unset;"></CustomValidationMessage>
+									<MatTextField @ref="@MailFromTextField" @bind-Value="@mailFrom" OnInput="e => this.MailFromChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailFromTextField.Ref)" Disabled="isBusy" Label="From * " Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.From.Address)" RemoteValidatorFuncs="@fromValidators" Class="@(this.IsMailAddressMenuOpen(MailFromTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailToTextField" @bind-Value="@mailTo" OnInput="e => this.MailToChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
-									<CustomValidationMessage For="@(() => model.To)" RemoteValidatorFuncs="@toValidators" Style="min-width: unset;"></CustomValidationMessage>
+									<MatTextField @ref="@MailToTextField" @bind-Value="@mailTo" OnInput="e => this.MailToChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailToTextField.Ref)" Disabled="isBusy" Label="To *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.To)" RemoteValidatorFuncs="@toValidators" Class="@(this.IsMailAddressMenuOpen(MailToTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<MatTextField @ref="@MailCCTextField" @bind-Value="@mailCC" OnInput="e => this.MailCcChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" Disabled="isBusy || ManageMails.IsBusy" Label="CC" Class="hide-validation-line full-width m-0"></MatTextField>
-									<CustomValidationMessage For="@(() => model.CC)" RemoteValidatorFuncs="@ccValidators" Style="min-width: unset;"></CustomValidationMessage>
+									<MatTextField @ref="@MailCCTextField" @bind-Value="@mailCC" OnInput="e => this.MailCcChanged(e.Value.ToString())" @onclick="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" OnFocus="async () => await this.UpdateMailAddressesMenuAnchor(MailCCTextField.Ref)" Disabled="isBusy" Label="CC" Class="hide-validation-line full-width m-0"></MatTextField>
+									<CustomValidationMessage For="@(() => model.CC)" RemoteValidatorFuncs="@ccValidators" Class="@(this.IsMailAddressMenuOpen(MailCCTextField?.Ref) ? "d-none" : string.Empty)" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<MatTextField @bind-Value="@model.Subject" Disabled="this.isBusy || ManageMails.IsBusy" Label="Subject *" Class="hide-validation-line full-width m-0"></MatTextField>
+									<MatTextField @bind-Value="@model.Subject" Disabled="this.isBusy" Label="Subject *" Class="hide-validation-line full-width m-0"></MatTextField>
 									<CustomValidationMessage For="@(() => model.Subject)" RemoteValidatorFuncs="@subjectValidators" Style="min-width: unset;"></CustomValidationMessage>
 								</div>
 								<div class="form-group position-relative">
-									<label class="m-0">Place Body *</label>
-									<GrapesjsEditor @ref="grapesjsEditor" Value="@model.Body" Disabled="this.isBusy || ManageMails.IsBusy"></GrapesjsEditor>
-									<CustomValidationMessage For="@(() => model.Body)" RemoteValidatorFuncs="@bodyValidators" Style="min-width: unset;"></CustomValidationMessage>
+									<label class="w-100 m-0">Body Format *</label>
+									<MatRadioGroup @bind-Value="@model.IsBodyHtml">
+										<MatRadioButton Value="false" Label="Plain Text" Class="pr-1 pl-0"></MatRadioButton>
+										<MatRadioButton Value="true" Label="Html" Class="pr-1"></MatRadioButton>
+									</MatRadioGroup>
+									<CustomValidationMessage For="@(() => model.IsBodyHtml)" RemoteValidatorFuncs="@subjectValidators" Style="min-width: unset;"></CustomValidationMessage>
+								</div>
+								<div class="form-group position-relative">
+									@if (model.IsBodyHtml)
+									{
+										<label class="m-0">Place Body *</label>
+										<GrapesjsEditor @ref="grapesjsEditor" Value="@model.Body" Disabled="this.isBusy">
+											<IsBusyContent>
+												<div class="overlay" style="z-index: 2;">
+													<MatProgressBar Indeterminate="true" Style="position: absolute; top: 0;"></MatProgressBar>
+												</div>
+											</IsBusyContent>
+										</GrapesjsEditor>
+										<CustomValidationMessage For="@(() => model.Body)" RemoteValidatorFuncs="@bodyValidators" Style="min-width: unset;"></CustomValidationMessage>
+									}
+									else
+									{
+										<MatTextField @bind-Value="@model.Body" Disabled="this.isBusy" Label="Place Body" TextArea="true" Class="hide-validation-line full-width h-100 m-0" Style="min-height: 10rem"></MatTextField>
+									}
 								</div>
 							}
 						</CustomRemoteValidator>
 					</EditForm>
 				</div>
-				<Menu @ref="@MailAddressesMenu">
+				<Menu @ref="@MailAddressesMenu" IsOpenChanged="StateHasChanged">
 					<MatList>
 						@{
-							var mailAddresses = ManageMails?.MailAddresses?.Where(a => a?.ToLower()?.Contains(mailAddressesSearchText?.ToLower() ?? string.Empty) == true) ?? Enumerable.Empty<string>();
+							var mailAddresses = MailAddresses?.Where(a => a?.ToLower()?.Contains(mailAddressesSearchText?.ToLower() ?? string.Empty) == true) ?? Enumerable.Empty<string>();
 							if (mailAddresses.Any())
 							{
 								@foreach (var mailAddress in mailAddresses)

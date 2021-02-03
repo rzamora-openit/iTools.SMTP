@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace OpeniT.SMTP.Web.Helpers
 {
@@ -29,7 +30,7 @@ namespace OpeniT.SMTP.Web.Helpers
 			this.logger = logger;
 		}
 
-		public async Task<List<AzureProfile>> GetUsers(string query)
+		public async Task<List<AzureProfile>> GetUsers(string query, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			List<AzureProfile> profiles = null;
 			var apiVersion = this.config["Microsoft:GraphApiVersion"];
@@ -53,23 +54,12 @@ namespace OpeniT.SMTP.Web.Helpers
 
 					var uri = $"{apiVersion}/{tenantName}/users{query}";
 
-					var result = await client.GetAsync(uri);
-					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync().Result}");
+					var result = await client.GetAsync(uri, cancellationToken);
+					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync(cancellationToken).Result}");
 
-					var content = await result.Content.ReadAsStringAsync();
+					var content = await result.Content.ReadAsStringAsync(cancellationToken);
 					var jArray = JObject.Parse(content).Value<JArray>("value");
 					profiles = jArray.ToObject<List<AzureProfile>>();
-
-					//if (string.IsNullOrEmpty(query))
-					//{
-					//	var thumbnailUri = $"{apiVersion}/{tenantName}/users/{owner}/photo/$value";
-					//	result = await client.GetAsync(thumbnailUri);
-					//	if (result != null && profile != null && result.IsSuccessStatusCode)
-					//	{
-					//		profile.ThumbnailContentType = result.Content.Headers.ContentType.MediaType;
-					//		profile.ThumbnailContent = await result.Content.ReadAsByteArrayAsync();
-					//	}
-					//}
 				}
 			}
 			catch (AuthenticationException ex)
@@ -83,61 +73,6 @@ namespace OpeniT.SMTP.Web.Helpers
 			}
 
 			return profiles;
-		}
-
-		public async Task<AzureProfile> GetUser(string owner, string query)
-		{
-			AzureProfile profile = null;
-			var apiVersion = this.config["Microsoft:GraphApiVersion"];
-			var tenantName = this.config["Microsoft:TenantName"];
-			var authString = this.config["Microsoft:Authority"];
-			var clientId = this.config["Microsoft:ClientId"];
-			var clientSecret = this.config["Microsoft:ClientSecret"];
-			var graphUri = this.config["Microsoft:GraphUri"];
-
-			try
-			{
-				var clientCredential = new ClientCredential(clientId, clientSecret);
-				var authenticationContext = new AuthenticationContext(authString, false);
-				var authenticationResult = await authenticationContext.AcquireTokenAsync(graphUri, clientCredential);
-				var token = authenticationResult.AccessToken;
-
-				using (var client = new HttpClient())
-				{
-					client.BaseAddress = new Uri(graphUri);
-					client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
-
-					var uri = $"{apiVersion}/{tenantName}/users/{owner}{query}";
-
-					var result = await client.GetAsync(uri);
-					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync().Result}");
-
-					var content = await result.Content.ReadAsStringAsync();
-					profile = JsonConvert.DeserializeObject<AzureProfile>(content);
-
-					if (string.IsNullOrEmpty(query))
-					{
-						var thumbnailUri = $"{apiVersion}/{tenantName}/users/{owner}/photo/$value";
-						result = await client.GetAsync(thumbnailUri);
-						if (result != null && profile != null && result.IsSuccessStatusCode)
-						{
-							profile.ThumbnailContentType = result.Content.Headers.ContentType.MediaType;
-							profile.ThumbnailContent = await result.Content.ReadAsByteArrayAsync();
-						}
-					}
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				this.logger.LogCritical($"Acquiring a token failed with the following error: {ex.Message}");
-				if (ex.InnerException != null) this.logger.LogError($"Error detail: {ex.InnerException.Message}");
-			}
-			catch (Exception ex)
-			{
-				this.logger.LogError($"Error getting user information: {ex}");
-			}
-
-			return profile;
 		}
 	}
 }

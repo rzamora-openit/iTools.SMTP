@@ -13,22 +13,27 @@ using System.Threading.Tasks;
 using OpeniT.SMTP.Web.Pages.Shared;
 using System.Threading;
 using System.ComponentModel.DataAnnotations;
+using Grapesjs;
+using OpeniT.SMTP.Web.DataRepositories;
+using OpeniT.SMTP.Web.Helpers;
 
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
-	[Authorize(Roles = "Administrator, Developer, User-Internal")]
-	public partial class AddMail : ComponentBase
+	[Authorize(Roles = "Administrator, Developer")]
+	public partial class AddMail : ComponentBase, IDisposable
 	{
+		[Inject] private IDataRepository dataRepository { get; set; }
 		[Inject] private IMatToaster matToaster { get; set; }
-		[Inject] private NavigationManager navigationManager { get; set; }
+		[Inject] private AzureHelper azureHelper { get; set; }
 		[Inject] private SMTPMethods smtpMethods { get; set; }
 
-		[CascadingParameter] private ManageMails ManageMails { get; set; }
-
-		[Parameter] public bool Shown { get; set; }
+		[Parameter] public bool IsOpen { get; set; }
+		[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+		[Parameter] public EventCallback<SmtpMail> OnValidSave { get; set; }
 
 		private bool isBusy = false;
-		private bool previousShown;
+		private bool isDisposed = false;
+		private bool previousIsOpen;
 
 		private EditContext editContext;
 		private CustomRemoteValidator customRemoteValidator;
@@ -53,22 +58,69 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 					? model?.CC?.LastOrDefault()?.Address
 					: null;
 
-		protected override void OnInitialized()
+		#region SiteValues
+		private List<AzureProfile> Profiles = new List<AzureProfile>();
+		private List<string> MailAddresses = new List<string>();
+		#endregion SiteValues
+
+		private CancellationTokenSource loadSiteValuesCts;
+
+		protected override async Task OnInitializedAsync()
 		{
-			this.Clear();
-			previousShown = !Shown;
+			try
+			{
+				isBusy = true;
+				StateHasChanged();
+
+				previousIsOpen = !IsOpen;
+
+				this.Clear();
+
+				await this.LoadSiteValues();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			finally
+			{
+				isBusy = false;
+				StateHasChanged();
+			}
 		}
 
 		protected override void OnParametersSet()
 		{
-			if (previousShown != Shown)
+			if (previousIsOpen != IsOpen)
 			{
-				previousShown = Shown;
+				previousIsOpen = IsOpen;
 
-				if (Shown)
+				if (IsOpen)
 				{
 					this.Clear();
 				}
+			}
+		}
+
+		public Task Close()
+		{
+			IsOpen = false;
+			return IsOpenChanged.InvokeAsync(IsOpen);
+		}
+
+		private async Task LoadSiteValues()
+		{
+			try
+			{
+				loadSiteValuesCts?.Cancel();
+				loadSiteValuesCts = new CancellationTokenSource();
+
+				Profiles = await azureHelper.GetUsers($"?$select=accountEnabled,mail,companyName,displayName,department,givenName,jobTitle,physicalDeliveryOfficeName,surname,userPrincipalName&$top=999", loadSiteValuesCts.Token);
+				MailAddresses = Profiles?.Where(p => p != null && p.AccountEnabled && !string.IsNullOrWhiteSpace(p.GivenName) && !string.IsNullOrWhiteSpace(p.Surname))?.Select(p => p.Mail)?.Distinct()?.ToList() ?? new List<string>();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
 			}
 		}
 
@@ -101,6 +153,11 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				mailCC = $"{mailCCSubstr}{(string.IsNullOrWhiteSpace(mailCCSubstr) ? string.Empty : " ")}{mailAddress}";
 				this.MailCcChanged(mailCC);
 			}
+		}
+
+		private bool IsMailAddressMenuOpen(ElementReference? element)
+		{
+			return element != null && MailAddressesMenu?.IsOpen == true && ElementReference.Equals(MailAddressesMenu?.AnchorElement, element.Value);
 		}
 
 		private void Clear()
@@ -236,18 +293,29 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				isBusy = true;
 				StateHasChanged();
 
-				grapesjsEditorValueCts?.Cancel();
-				grapesjsEditorValueCts = new CancellationTokenSource();
-				model.Body = await grapesjsEditor.GetValue(grapesjsEditorValueCts);
+				if (model.IsBodyHtml)
+				{
+					grapesjsEditorValueCts?.Cancel();
+					grapesjsEditorValueCts = new CancellationTokenSource();
+					model.Body = await grapesjsEditor?.GetValue(grapesjsEditorValueCts);
+				}
 
 				if (await customRemoteValidator.Validate())
 				{
-					if (await ManageMails.AddMail(model))
+					if (model != null)
 					{
-						await smtpMethods.SendMail(model);
+						await this.dataRepository.Add<SmtpMail>(model);
 
-						matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
-						this.navigationManager.NavigateTo(ManageMails.CurrentFiltersUri);
+						if (await this.dataRepository.SaveChangesAsync())
+						{
+							await smtpMethods.SendMail(model);
+
+							matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
+
+							await OnValidSave.InvokeAsync(model);
+
+							await this.Close();
+						}
 					}
 				}
 				else
@@ -265,6 +333,27 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				isBusy = false;
 				StateHasChanged();
 			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (isDisposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				loadSiteValuesCts?.Cancel();
+			}
+
+			isDisposed = true;
 		}
 	}
 }

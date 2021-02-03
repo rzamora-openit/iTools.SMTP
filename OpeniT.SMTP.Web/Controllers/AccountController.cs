@@ -23,8 +23,8 @@ namespace OpeniT.SMTP.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IWebHostEnvironment hostingEnvironment;
-        private readonly IPortalRepository portalRepository;
-        private readonly ILogger<PortalRepository> portalLogger;
+        private readonly IDataRepository portalRepository;
+        private readonly ILogger<DataRepository> portalLogger;
         //private readonly IStringLocalizer<AccountController> localizer;
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly UserManager<ApplicationUser> userManager;
@@ -32,8 +32,8 @@ namespace OpeniT.SMTP.Web.Controllers
 
         public AccountController(
             IWebHostEnvironment hostingEnvironment,
-            IPortalRepository portalRepository,
-            ILogger<PortalRepository> portalLogger,
+            IDataRepository portalRepository,
+            ILogger<DataRepository> portalLogger,
             //IStringLocalizer<AccountController> localizer,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,

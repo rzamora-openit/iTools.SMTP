@@ -1,28 +1,26 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-<CascadingValue Value="@this">
-	@if (componentStates["table"].Shown)
-	{
-		<TableMails OnFilterChanged="@this.FiltersChanged" Shown="@componentStates["table"].Shown"></TableMails>
-	}
+@if (componentTypeToComponentInfoMap[typeof(TableMails)].Rendered)
+{
+	<TableMails @ref="@table" IsOpen="@componentTypeToComponentInfoMap[typeof(TableMails)].Shown" BaseRouteTemplate="@Constants.RouteTemplates.MANAGE_MAILS"></TableMails>
+}
 
-	@if (componentStates["add"].Rendered)
-	{
-		<AddMail Shown="@componentStates["add"].Shown"></AddMail>
-	}
+@if (componentTypeToComponentInfoMap[typeof(AddMail)].Rendered)
+{
+	<AddMail OnValidSave="(SmtpMail mail) => table?.Insert(mail)" IsOpen="@componentTypeToComponentInfoMap[typeof(AddMail)].Shown" IsOpenChanged="(bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, typeof(AddMail))"></AddMail>
+}
 
-	@if (componentStates["view"].Rendered)
-	{
-		<ViewMail Mail="@Mail" IsOpen="@componentStates["view"].Shown" IsOpenChanged="@((bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, "view"))"></ViewMail>
-	}
+@if (componentTypeToComponentInfoMap[typeof(CopyMail)].Rendered)
+{
+	<CopyMail OnValidSave="(SmtpMail mail) => table?.Insert(mail)" MailGuid="@MailGuid" IsOpen="@componentTypeToComponentInfoMap[typeof(CopyMail)].Shown" IsOpenChanged="(bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, typeof(CopyMail))"></CopyMail>
+}
 
-	@if (componentStates["copy"].Rendered)
-	{
-		<CopyMail Mail="@Mail" Shown="@componentStates["copy"].Shown"></CopyMail>
-	}
+@if (componentTypeToComponentInfoMap[typeof(ViewMail)].Rendered)
+{
+	<ViewMail MailGuid="@MailGuid" IsOpen="@componentTypeToComponentInfoMap[typeof(ViewMail)].Shown" IsOpenChanged="(bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, typeof(ViewMail))"></ViewMail>
+}
 
-	@if (componentStates["delete"].Rendered)
-	{
-		<DeleteMail Mail="@Mail" IsOpen="@componentStates["delete"].Shown" IsOpenChanged="@((bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, "delete"))"></DeleteMail>
-	}
-</CascadingValue>
+@if (componentTypeToComponentInfoMap[typeof(DeleteMail)].Rendered)
+{
+	<DeleteMail OnValidSave="(SmtpMail mail) => table?.Remove(mail)" MailGuid="@MailGuid" IsOpen="@componentTypeToComponentInfoMap[typeof(DeleteMail)].Shown" IsOpenChanged="(bool isOpen) => this.ComponentDialogIsOpenChanged(isOpen, typeof(DeleteMail))"></DeleteMail>
+}

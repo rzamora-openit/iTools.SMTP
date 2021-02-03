@@ -24,16 +24,6 @@ namespace OpeniT.SMTP.Web.Methods
         {
             return jsRuntime.InvokeVoidAsync($"{SiteFunctionsPrefix}.init");
         }
-        internal static ValueTask InitDropdown(
-            IJSRuntime jsRuntime,
-            DotNetObjectReference<Dropdown> jsHelper,
-            ElementReference menuElement,
-            ElementReference anchorElement,
-            DropdownAnchorCorner anchorCorner,
-            bool flipCornerHorizontally)
-        {
-            return jsRuntime.InvokeVoidAsync($"{SiteFunctionsPrefix}.initDropdown", jsHelper, menuElement, anchorCorner, anchorCorner, flipCornerHorizontally);
-        }
         internal static ValueTask InitMenu(
             IJSRuntime jsRuntime,
             DotNetObjectReference<BaseMenu> jsHelper,

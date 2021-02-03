@@ -20,35 +20,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Http;
 
 namespace OpeniT.SMTP.Web.Methods
 {
     public static class ExtensionMethods
     {
-        public enum SizeUnits
-        {
-            Byte, KB, MB, GB, TB, PB, EB, ZB, YB
-        }
-
-        public static double ToSize(this Int64 value, SizeUnits unit)
-        {
-            return (value / (double)Math.Pow(1024, (Int64)unit));
-        }
-
-        public static string ToSizeString(this Int64 len)
-        {
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            int order = 0;
-            double lenDouble = Convert.ToDouble(len);
-            while (lenDouble >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                lenDouble = lenDouble / 1024;
-            }
-
-            return string.Format("{0:0.##} {1}", lenDouble, sizes[order]);
-        }
-
         public static IQueryable<T> Include<T>(this IQueryable<T> source, IEnumerable<string> navigationPropertyPaths)
             where T : class
         {
@@ -179,65 +158,6 @@ namespace OpeniT.SMTP.Web.Methods
             return filteredCollection;
         }
 
-        public static List<T> CloneList<T>(this IEnumerable<T> enumerable)
-        {
-            try
-            {
-                if (enumerable == null)
-                    return null;
-
-                List<T> valuesList = new List<T>();
-                if (enumerable.GetType() != typeof(string))
-                {
-                    foreach (var value in enumerable)
-                    {
-                        valuesList.Add(value);
-                    }
-                }
-
-                return valuesList;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return null;
-            }
-        }
-
-        public static string ToAbsoluteUriString(this NavigationManager navigationManager, string relativeUri)
-        {
-            return navigationManager.ToAbsoluteUri(relativeUri).AbsoluteUri;
-        }
-
-        public static object GetObjectValue(this object obj, string fieldNames)
-        {
-            object currentObject = obj;
-            string[] _fieldNames = fieldNames.Split(".");
-
-            foreach (string fieldName in _fieldNames)
-            {
-                if (currentObject == null)
-                    break;
-
-                Type curentRecordType = currentObject.GetType();
-                PropertyInfo property = curentRecordType.GetProperty(fieldName);
-
-                if (property != null)
-                {
-                    if (property.CanRead && property.GetGetMethod(true).IsPublic)
-                    {
-                        currentObject = property.GetValue(currentObject, null);
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return currentObject;
-        }
-
         public static bool TryGetQueryString<T>(this NavigationManager navManager, string key, out T value)
         {
             var uri = navManager.ToAbsoluteUri(navManager.Uri);
@@ -269,7 +189,68 @@ namespace OpeniT.SMTP.Web.Methods
 
         public static string GetBaseRelativePath(this NavigationManager navigationManager)
         {
-            return navigationManager.ToBaseRelativePath(navigationManager.Uri).Split("?").FirstOrDefault() ?? string.Empty;
+            return "/" + navigationManager.ToBaseRelativePath(navigationManager.Uri).Split("?").FirstOrDefault() ?? string.Empty;
+        }
+
+        public static string ToAbsoluteUriString(this NavigationManager navigationManager, string relativeUri)
+        {
+            return navigationManager.ToAbsoluteUri(relativeUri).AbsoluteUri;
+        }
+
+        public static bool RouteTemplateMatch(this NavigationManager navigationManager, string routeTemplate)
+        {
+            var template = TemplateParser.Parse(routeTemplate);
+            var routeValues = new RouteValueDictionary();
+            foreach (var parameter in template.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    routeValues.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            var requestPath = navigationManager.GetBaseRelativePath();
+            var template2 = TemplateParser.Parse(requestPath);
+            var routeValues2 = new RouteValueDictionary();
+            foreach (var parameter in template2.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    routeValues2.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            var matcher = new TemplateMatcher(template, routeValues);
+            return matcher.TryMatch(new PathString(requestPath), routeValues2);
+        }
+
+        public static object GetObjectValue(this object obj, string fieldNames)
+        {
+            object currentObject = obj;
+            string[] _fieldNames = fieldNames.Split(".");
+
+            foreach (string fieldName in _fieldNames)
+            {
+                if (currentObject == null)
+                    break;
+
+                Type curentRecordType = currentObject.GetType();
+                PropertyInfo property = curentRecordType.GetProperty(fieldName);
+
+                if (property != null)
+                {
+                    if (property.CanRead && property.GetGetMethod(true).IsPublic)
+                    {
+                        currentObject = property.GetValue(currentObject, null);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return currentObject;
         }
 
         public static string GetUniqueName(this MethodInfo mi)
@@ -368,29 +349,6 @@ namespace OpeniT.SMTP.Web.Methods
             {
                 semaphoreSlim.Release();
             }
-        }
-
-        public static async Task WaitWhile(Func<bool> condition, int frequency = 25, int timeout = -1)
-        {
-            var waitTask = Task.Run(async () =>
-            {
-                while (condition()) await Task.Delay(frequency);
-            });
-
-            if (waitTask != await Task.WhenAny(waitTask, Task.Delay(timeout)))
-                throw new TimeoutException();
-        }
-
-        public static async Task WaitUntil(Func<bool> condition, int frequency = 25, int timeout = -1)
-        {
-            var waitTask = Task.Run(async () =>
-            {
-                while (!condition()) await Task.Delay(frequency);
-            });
-
-            if (waitTask != await Task.WhenAny(waitTask,
-                    Task.Delay(timeout)))
-                throw new TimeoutException();
         }
 
         public static FieldIdentifier Field<TField>(this EditContext editContext, Expression<Func<TField>> accessor)

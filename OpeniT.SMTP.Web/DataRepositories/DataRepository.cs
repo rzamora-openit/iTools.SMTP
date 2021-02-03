@@ -13,10 +13,11 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace OpeniT.SMTP.Web.DataRepositories
 {
-    public class PortalRepository : IPortalRepository
+    public class DataRepository : IDataRepository
     {
         private readonly DataContext context;
         private readonly ILogger<DataContext> logger;
@@ -24,7 +25,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
-        public PortalRepository(UserManager<ApplicationUser> userManager,
+        public DataRepository(UserManager<ApplicationUser> userManager,
                                 SignInManager<ApplicationUser> signInManager,
                                 DataContext context,
                                 ILogger<DataContext> logger)
@@ -35,9 +36,11 @@ namespace OpeniT.SMTP.Web.DataRepositories
             this.logger = logger;
         }
 
+        private SemaphoreSlim singleTaskQueue = new SemaphoreSlim(1);
+
         public async Task<IdentityResult> CreateUser(ApplicationUser user, string password)
         {
-            return await this.userManager.CreateAsync(user, password);            
+            return await this.userManager.CreateAsync(user, password);
         }
 
         public async Task<IdentityResult> CreateAdminUser(ApplicationUser user)
@@ -54,8 +57,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
 
         public async Task<ApplicationUser> GetUserByEmail(string email)
         {
-            return await this.userManager.Users.Where(u => u.Email == email)
-                .FirstOrDefaultAsync();
+            return await singleTaskQueue.Enqueue(() => this.userManager.Users.Where(u => u.Email == email).FirstOrDefaultAsync());
         }
 
         public async Task<IdentityResult> UpdateUser(ApplicationUser user)
@@ -103,20 +105,27 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 return EntityState.Detached;
             };
         }
-        public TEntity CloneEntry<TEntity>(TEntity source) where TEntity : class
+        public TEntity CloneEntry<TEntity>(TEntity source, TEntity destination = null, bool resetIds = false, bool deepClone = false) where TEntity : class
         {
-            var destination = (TEntity)Activator.CreateInstance(source.GetType());
-            if (source != null)
+            if (source == null)
             {
-                var sourceEntry = this.context.Entry(source);
-                var destinationEntry = this.context.Entry(destination);
+                return null;
+            }
 
-                destinationEntry.CurrentValues.SetValues(sourceEntry.CurrentValues.Clone());
-                var keyProperties = this.context.Model.FindEntityType(destination.GetType()).FindPrimaryKey().Properties;
+            var sourceEntry = this.context.Entry(source);
+
+            var dest = destination ?? (TEntity)Activator.CreateInstance(source.GetType());
+            var destinationEntry = this.context.Entry(dest);
+
+            destinationEntry.CurrentValues.SetValues(sourceEntry.CurrentValues.Clone());
+
+            if (resetIds)
+            {
+                var keyProperties = this.context.Model.FindEntityType(dest.GetType()).FindPrimaryKey().Properties;
                 foreach (var keyProperty in keyProperties)
-				{
+                {
                     if (keyProperty.ClrType.IsValueType)
-					{
+                    {
                         destinationEntry.Property(keyProperty.Name).CurrentValue = Activator.CreateInstance(keyProperty.ClrType);
                     }
                     else
@@ -124,12 +133,15 @@ namespace OpeniT.SMTP.Web.DataRepositories
                         destinationEntry.Property(keyProperty.Name).CurrentValue = null;
                     }
                 }
+            }
 
+            if (deepClone)
+            {
                 foreach (var referenceEntry in sourceEntry.References)
                 {
                     if (referenceEntry.CurrentValue != null)
                     {
-                        destinationEntry.Reference(referenceEntry.Metadata.Name).CurrentValue = this.CloneEntry(referenceEntry.CurrentValue);
+                        destinationEntry.Reference(referenceEntry.Metadata.Name).CurrentValue = this.CloneEntry(source: referenceEntry.CurrentValue, resetIds: resetIds, deepClone: deepClone);
                     }
                 }
 
@@ -137,22 +149,43 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 {
                     if (collectionEntry.CurrentValue != null)
                     {
-                        var copyValuesType = typeof(List<>).MakeGenericType(collectionEntry.Metadata.PropertyInfo.PropertyType.GetGenericArguments()[0]);
-                        var copyValues = (IList)Activator.CreateInstance(copyValuesType);
+                        var cloneValuesType = typeof(List<>).MakeGenericType(collectionEntry.Metadata.PropertyInfo.PropertyType.GetGenericArguments()[0]);
+                        var cloneValues = (IList)Activator.CreateInstance(cloneValuesType);
                         foreach (var entry in collectionEntry.CurrentValue)
                         {
-                            object copyValue = null;
-                            copyValue = this.CloneEntry(entry);
+                            object cloneValue = this.CloneEntry(source: entry, resetIds: resetIds, deepClone: deepClone);
 
-                            copyValues.Add(copyValue);
+                            cloneValues.Add(cloneValue);
                         }
 
-                        destinationEntry.Collection(collectionEntry.Metadata.Name).CurrentValue = copyValues;
+                        destinationEntry.Collection(collectionEntry.Metadata.Name).CurrentValue = cloneValues;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var referenceEntry in sourceEntry.References)
+                {
+                    destinationEntry.Reference(referenceEntry.Metadata.Name).CurrentValue = referenceEntry.CurrentValue;
+                }
+
+                foreach (var collectionEntry in sourceEntry.Collections)
+                {
+                    if (collectionEntry.CurrentValue != null)
+                    {
+                        var cloneValuesType = typeof(List<>).MakeGenericType(collectionEntry.Metadata.PropertyInfo.PropertyType.GetGenericArguments()[0]);
+                        var cloneValues = (IList)Activator.CreateInstance(cloneValuesType);
+                        foreach (var entry in collectionEntry.CurrentValue)
+                        {
+                            cloneValues.Add(entry);
+                        }
+
+                        destinationEntry.Collection(collectionEntry.Metadata.Name).CurrentValue = cloneValues;
                     }
                 }
             }
 
-            return destination;
+            return dest;
         }
         public async Task ReloadEntry<TEntity>(TEntity entity) where TEntity : class
         {
@@ -301,155 +334,6 @@ namespace OpeniT.SMTP.Web.DataRepositories
         #endregion contextMethods
 
         #region GenericMethods
-        public async Task<List<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, int? includeDepth = null, DataPagination dataPagination = null, params DataSort<TEntity, object>[] dataSorts) where TEntity : class
-        {
-            var includePaths = includeDepth.HasValue ?
-                this.context.GetIncludePaths(typeof(TEntity), includeDepth.Value - 1).Distinct() :
-                null;
-
-            IQueryable<TEntity> entities = includePaths != null && includePaths.Any() ?
-                this.context.Set<TEntity>().Include(includePaths) :
-                this.context.Set<TEntity>();
-
-            if (dataSorts != null && dataSorts.Any(ds => ds != null))
-            {
-                IOrderedQueryable<TEntity> orderedEntities = null;
-                entities = dataSorts.Aggregate(entities, (current, dataSort) => {
-                    if (dataSort == dataSorts.First())
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? entities.OrderBy(dataSort.OrderExpression) : entities.OrderByDescending(dataSort.OrderExpression);
-                    }
-                    else
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? orderedEntities.ThenBy(dataSort.OrderExpression) : orderedEntities.ThenByDescending(dataSort.OrderExpression);
-                    }
-
-                    return orderedEntities;
-                });
-            }
-
-            if (filterExpression != null)
-            {
-                entities = entities.Where(filterExpression);
-            }
-
-            if (dataPagination != null)
-            {
-                entities = entities
-                    .Skip(dataPagination.PageIndex * dataPagination.PageSize)
-                    .Take(dataPagination.PageSize);
-            }
-
-            return await entities.ToListAsync();
-        }
-        public async Task<TEntity> GetFirst<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, int? includeDepth = null, params DataSort<TEntity, object>[] dataSorts) where TEntity : class, new()
-        {
-            var includePaths = includeDepth.HasValue ?
-                this.context.GetIncludePaths(typeof(TEntity), includeDepth.Value - 1).Distinct() :
-                null;
-
-            IQueryable<TEntity> entities = includePaths != null && includePaths.Any() ?
-                this.context.Set<TEntity>().Include(includePaths) :
-                this.context.Set<TEntity>();
-
-            if (dataSorts != null && dataSorts.Any(ds => ds != null))
-            {
-                IOrderedQueryable<TEntity> orderedEntities = null;
-                entities = dataSorts.Aggregate(entities, (current, dataSort) => {
-                    if (dataSort == dataSorts.First())
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? entities.OrderBy(dataSort.OrderExpression) : entities.OrderByDescending(dataSort.OrderExpression);
-                    }
-                    else
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? orderedEntities.ThenBy(dataSort.OrderExpression) : orderedEntities.ThenByDescending(dataSort.OrderExpression);
-                    }
-
-                    return orderedEntities;
-                });
-            }
-
-            if (filterExpression != null)
-            {
-                entities = entities.Where(filterExpression);
-            }
-
-            return await entities.FirstOrDefaultAsync();
-        }
-        public async Task<TSelect> SelectFirst<TEntity, TSelect>(Expression<Func<TEntity, TSelect>> selectExpression, Expression <Func<TSelect, bool>> filterExpression = null, params DataSort<TSelect, object>[] dataSorts) where TEntity : class
-        {
-            IQueryable<TSelect> entities = this.context.Set<TEntity>().Select(selectExpression);
-
-            if (dataSorts != null && dataSorts.Any(ds => ds != null))
-            {
-                IOrderedQueryable<TSelect> orderedEntities = null;
-                entities = dataSorts.Aggregate(entities, (current, dataSort) => {
-                    if (dataSort == dataSorts.First())
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? entities.OrderBy(dataSort.OrderExpression) : entities.OrderByDescending(dataSort.OrderExpression);
-                    }
-                    else
-                    {
-                        orderedEntities = dataSort.SortDirection == SortDirection.ASC ? orderedEntities.ThenBy(dataSort.OrderExpression) : orderedEntities.ThenByDescending(dataSort.OrderExpression);
-                    }
-
-                    return orderedEntities;
-                });
-            }
-
-            if (filterExpression != null)
-            {
-                entities = entities.Where(filterExpression);
-            }
-
-            return await entities.FirstOrDefaultAsync();
-        }
-        public async Task<int> GetCount<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null) where TEntity : class
-        {
-            IQueryable<TEntity> entities = this.context.Set<TEntity>();
-
-            if (filterExpression != null)
-            {
-                entities = entities.Where(filterExpression);
-            }
-
-            return await entities.CountAsync();
-        }
-        public async Task<bool> GetAny<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null) where TEntity : class
-        {
-            IQueryable<TEntity> entities = this.context.Set<TEntity>();
-
-            if (filterExpression != null)
-            {
-                entities = entities.Where(filterExpression);
-            }
-
-            return await entities.AnyAsync();
-        }
-        public async Task Add<TEntity>(TEntity entity) where TEntity : class
-        {
-            if (entity == null) return;
-
-            await this.context.Set<TEntity>().AddAsync(entity);
-        }
-        public void Update<TEntity>(TEntity entity) where TEntity : class
-        {
-            if (entity == null) return;
-
-            this.context.Set<TEntity>().Update(entity);
-        }
-        public void Remove<TEntity>(TEntity entity) where TEntity : class
-		{
-            if (entity == null) return;
-
-            this.context.Set<TEntity>().Remove(entity);
-        }
-        public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-        {
-            if (entities?.Where(e => e != null)?.Any() != true) return;
-
-            this.context.Set<TEntity>().RemoveRange(entities);
-        }
         public IQueryable<TEntity> GetQueryable<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, int? includeDepth = null, DataPagination dataPagination = null, params DataSort<TEntity, object>[] dataSorts) where TEntity : class
         {
             var includePaths = includeDepth.HasValue ?
@@ -490,6 +374,54 @@ namespace OpeniT.SMTP.Web.DataRepositories
             }
 
             return entities;
+        }
+        public async Task<List<TEntity>> GetAll<TEntity>(IQueryable<TEntity> query, CancellationToken cancellationToken = default) where TEntity : class
+        {
+            return await singleTaskQueue.Enqueue(() => query.ToListAsync(cancellationToken));
+        }
+        public async Task<List<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, int? includeDepth = null, DataPagination dataPagination = null, CancellationToken cancellationToken = default, params DataSort<TEntity, object>[] dataSorts) where TEntity : class
+        {
+            IQueryable<TEntity> entitiesQuery = this.GetQueryable(filterExpression, includeDepth, dataPagination, dataSorts: dataSorts);
+            return await singleTaskQueue.Enqueue(() => this.GetAll(entitiesQuery, cancellationToken));
+        }
+        public async Task<TEntity> GetFirst<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, int? includeDepth = null, CancellationToken cancellationToken = default, params DataSort<TEntity, object>[] dataSorts) where TEntity : class, new()
+        {
+            IQueryable<TEntity> entities = this.GetQueryable(filterExpression, includeDepth, dataSorts: dataSorts);
+            return await singleTaskQueue.Enqueue(() => entities.FirstOrDefaultAsync(cancellationToken));
+        }
+        public async Task<int> GetCount<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, CancellationToken cancellationToken = default) where TEntity : class
+        {
+            IQueryable<TEntity> entities = this.GetQueryable(filterExpression);
+            return await singleTaskQueue.Enqueue(() => entities.CountAsync(cancellationToken));
+        }
+        public async Task<bool> GetAny<TEntity>(Expression<Func<TEntity, bool>> filterExpression = null, CancellationToken cancellationToken = default) where TEntity : class
+        {
+            IQueryable<TEntity> entities = this.GetQueryable(filterExpression);
+            return await singleTaskQueue.Enqueue(() => entities.AnyAsync(cancellationToken));
+        }
+        public async Task Add<TEntity>(TEntity entity) where TEntity : class
+        {
+            if (entity == null) return;
+
+            await this.context.Set<TEntity>().AddAsync(entity);
+        }
+        public void Update<TEntity>(TEntity entity) where TEntity : class
+        {
+            if (entity == null) return;
+
+            this.context.Set<TEntity>().Update(entity);
+        }
+        public void Remove<TEntity>(TEntity entity) where TEntity : class
+        {
+            if (entity == null) return;
+
+            this.context.Set<TEntity>().Remove(entity);
+        }
+        public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+        {
+            if (entities?.Where(e => e != null)?.Any() != true) return;
+
+            this.context.Set<TEntity>().RemoveRange(entities);
         }
         #endregion GenericMethods
     }

@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\iTools.Utilities\GrapesjsEditor\Grapesjs.csproj" />
     <ProjectReference Include="..\..\iTools.Utilities\JsRuntimeStream\JsRuntimeStream.csproj" />
   </ItemGroup>
 

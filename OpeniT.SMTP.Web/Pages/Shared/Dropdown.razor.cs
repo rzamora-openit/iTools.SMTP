@@ -9,28 +9,14 @@ using System.Threading.Tasks;
 
 namespace OpeniT.SMTP.Web.Pages.Shared
 {
-	public enum DropdownAnchorCorner
-	{
-		BOTTOM_END = 13,
-		BOTTOM_LEFT = 1,
-		BOTTOM_RIGHT = 5,
-		BOTTOM_START = 9,
-		TOP_END = 12,
-		TOP_LEFT = 0,
-		TOP_RIGHT = 4,
-		TOP_START = 8
-	};
-
 	public partial class Dropdown : ComponentBase
 	{
-		[Inject] private IJSRuntime jsRuntime { get; set; }
-
 		[Parameter] public string Class { get; set; }
 		[Parameter] public string Style { get; set; }
-		[Parameter] public DropdownAnchorCorner Position { get; set; } = DropdownAnchorCorner.BOTTOM_LEFT;
+		[Parameter] public MenuAnchorPosition Position { get; set; } = MenuAnchorPosition.BOTTOM_LEFT;
 		[Parameter] public bool FlipCornerHorizontally { get; set; }
-		[Parameter] public RenderFragment<MatMenu> ButtonContent { get; set; }
-		[Parameter] public RenderFragment<MatMenu> MenuContent { get; set; }
+		[Parameter] public RenderFragment ButtonContent { get; set; }
+		[Parameter] public RenderFragment<Menu> MenuContent { get; set; }
 		[Parameter] public bool IsOpen { get; set; }
 		[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 		[Parameter] public bool Disabled { get; set; }
@@ -40,53 +26,32 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 		[Parameter] public string MenuClass { get; set; }
 		[Parameter] public string MenuStyle { get; set; }
 
-		private DotNetObjectReference<Dropdown> jsHelper;
 		private ElementReference anchorRef;
-		private MatMenu menu;
+		private Menu menu;
 
-
-		public Dropdown()
-		{
-			jsHelper = DotNetObjectReference.Create(this);
-		}
+		private string classMapper => $"mdc-dropdown {Class} {(IsOpen ? "mdc-dropdown-open" : string.Empty)}";
 
 		public async Task Toggle()
 		{
-			if (!Disabled)
+			if (!Disabled && !IsOpen)
 			{
-				IsOpen = !IsOpen;
-				if (IsOpen)
-				{
-					await this.menu.OpenAsync(anchorRef);
-				}
-				else
-				{
-					await this.menu.CloseAsync();
-				}
+				await this.menu.OpenAsync(anchorRef);
 			}
 			else
 			{
-				IsOpen = false;
 				await this.menu.CloseAsync();
 			}
-
-			await this.NotifyIsOpenChanged(IsOpen);
 		}
 
-		protected override async Task OnAfterRenderAsync(bool firstRender)
+		private Task IsOpenIsChanged(bool isOpen)
 		{
-			if (firstRender)
+			if (IsOpen != isOpen)
 			{
-				await JSIntropMethods.InitDropdown(jsRuntime, jsHelper, menu.Ref, anchorRef, Position, FlipCornerHorizontally);
+				IsOpen = isOpen;
+				return IsOpenChanged.InvokeAsync(IsOpen);
 			}
-		}
 
-		[JSInvokable]
-		public Task NotifyIsOpenChanged(bool isOpen)
-		{
-			IsOpen = isOpen;
-			StateHasChanged();
-			return IsOpenChanged.InvokeAsync(IsOpen);
+			return Task.CompletedTask;
 		}
 	}
 }

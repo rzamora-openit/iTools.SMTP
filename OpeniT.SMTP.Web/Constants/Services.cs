@@ -11,7 +11,7 @@ namespace OpeniT.SMTP.Web.Constants
 	{
 		public static readonly ServiceViewModel HOME_SERVICE = new ServiceViewModel()
 		{
-			Uri = "/",
+			Uri = RouteTemplates.HOME,
 			UriMatch = NavLinkMatch.All,
 			Title = "Home",
 			Description = "Description",
@@ -31,21 +31,11 @@ namespace OpeniT.SMTP.Web.Constants
 			}
 		};
 
-		public static readonly ServiceViewModel ADD_SMTP_MAILS_SERVICE = new ServiceViewModel()
-		{
-			Key = 26,
-			OrderOfImportance = 1,
-			Uri = "/smtp/mails/add",
-			UriMatch = NavLinkMatch.All,
-			Title = "Add Mail",
-			Description = "Description",
-			Icon = "email"
-		};
 		public static readonly ServiceViewModel MANAGE_SMTP_MAILS_SERVICE = new ServiceViewModel()
 		{
 			Key = 26,
 			OrderOfImportance = 1,
-			Uri = "/smtp/mails",
+			Uri = RouteTemplates.MANAGE_MAILS,
 			Title = "Mails",
 			Description = "Description",
 			Icon = "email"
@@ -60,8 +50,7 @@ namespace OpeniT.SMTP.Web.Constants
 			Icon = "email",
 			Services = new ServiceViewModel[]
 			{
-				MANAGE_SMTP_MAILS_SERVICE,
-				ADD_SMTP_MAILS_SERVICE
+				MANAGE_SMTP_MAILS_SERVICE
 			}
 		};
 	}

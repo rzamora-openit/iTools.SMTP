@@ -17,16 +17,16 @@ namespace OpeniT.SMTP.Web.Controllers
 	[Authorize]
 	public class DownloadController : Controller
 	{
-		private readonly IPortalRepository portalRepository;
-		private readonly ILogger<PortalRepository> portalLogger;
+		private readonly IDataRepository portalRepository;
+		private readonly ILogger<DataRepository> portalLogger;
 		private readonly Microsoft.Extensions.Configuration.IConfiguration configuration;
 		//private readonly IStringLocalizer<AccountController> localizer;
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private IWebHostEnvironment webHostEnvironment { get; set; }
 
 		public DownloadController(
-			IPortalRepository portalRepository,
-			ILogger<PortalRepository> portalLogger,
+			IDataRepository portalRepository,
+			ILogger<DataRepository> portalLogger,
 			Microsoft.Extensions.Configuration.IConfiguration configuration,
 			//IStringLocalizer<AccountController> localizer,
 			SignInManager<ApplicationUser> signInManager,

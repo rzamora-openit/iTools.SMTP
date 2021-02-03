@@ -13,7 +13,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
 	public partial class SideBarMenu : ComponentBase
 	{
 		[Inject] private ILocalStorageService localStorage { get; set; }
-		[Inject] private IPortalRepository portalRepository { get; set; }
+		[Inject] private IDataRepository portalRepository { get; set; }
 
 		[CascadingParameter] FixedSiteCascadingValueViewModel fixedSiteCascadingValue { get; set; }
 		[CascadingParameter] SiteCascadingValueViewModel siteCascadingValue { get; set; }

@@ -7,13 +7,6 @@
 
 	protected override void OnInitialized()
 	{
-		if (AuthenticationState.User.IsInRole("User-External"))
-		{
-			this.navigationManager.NavigateTo($"/not-authorized?visited={this.navigationManager.Uri}", true);
-		}
-		else
-		{
-			this.navigationManager.NavigateTo($"/admin/not-authorized?visited={this.navigationManager.Uri}", true);
-		}
+		this.navigationManager.NavigateTo($"/not-authorized?visited={this.navigationManager.Uri}", true);
 	}
 }

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeniT.SMTP.Web", "OpeniT.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsRuntimeStream", "..\iTools.Utilities\JsRuntimeStream\JsRuntimeStream.csproj", "{B4110A91-5B21-41DD-943B-E88F46EC82DA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grapesjs", "..\iTools.Utilities\GrapesjsEditor\Grapesjs.csproj", "{52EF6F67-3CC3-47B1-A9C1-603351702A57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B4110A91-5B21-41DD-943B-E88F46EC82DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4110A91-5B21-41DD-943B-E88F46EC82DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4110A91-5B21-41DD-943B-E88F46EC82DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52EF6F67-3CC3-47B1-A9C1-603351702A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52EF6F67-3CC3-47B1-A9C1-603351702A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52EF6F67-3CC3-47B1-A9C1-603351702A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52EF6F67-3CC3-47B1-A9C1-603351702A57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

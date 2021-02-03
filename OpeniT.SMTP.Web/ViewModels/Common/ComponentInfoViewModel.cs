@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace OpeniT.SMTP.Web.ViewModels
 {
-	public class ComponentStateViewModel
+	public class ComponentInfoViewModel
 	{
-		public Regex UrlRegex { get; set; }
-
 		public bool Rendered { get; set; }
 
 		public bool Shown { get; set; }
+
+		public string RouteTemplate { get; set; }
 	}
 }

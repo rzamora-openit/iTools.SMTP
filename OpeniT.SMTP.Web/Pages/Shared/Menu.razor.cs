@@ -21,7 +21,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared
         TOP_START = 8
     };
 
-    public class BaseMenu : BaseMatDomComponent
+    public class BaseMenu : BaseMatDomComponent, IDisposable
     {
         [Inject] private IJSRuntime jsRuntime { get; set; }
 
@@ -32,9 +32,11 @@ namespace OpeniT.SMTP.Web.Pages.Shared
         [Parameter] public bool IsOpen { get; set; }
         [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
+        public ElementReference AnchorElement;
+
         private DotNetObjectReference<BaseMenu> jsHelper;
 
-        public ElementReference AnchorElement;
+        private bool isDisposed = false;
 
         public BaseMenu()
         {
@@ -77,6 +79,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared
 
             await IsOpenChanged.InvokeAsync(IsOpen);
         }
+
         public async Task SetState(bool open)
         {
             IsOpen = open;
@@ -96,9 +99,35 @@ namespace OpeniT.SMTP.Web.Pages.Shared
         [JSInvokable]
         public Task NotifyIsOpenChanged(bool isOpen)
         {
-            IsOpen = isOpen;
-            StateHasChanged();
-            return IsOpenChanged.InvokeAsync(IsOpen);
+            if (IsOpen != isOpen)
+            {
+                IsOpen = isOpen;
+                return IsOpenChanged.InvokeAsync(IsOpen);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                jsHelper?.Dispose();
+            }
+
+            isDisposed = true;
         }
     }
 }

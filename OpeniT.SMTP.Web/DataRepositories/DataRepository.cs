@@ -51,8 +51,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
 
         public async Task<ApplicationUser> GetUserByUserName(string userName)
         {
-            return await this.userManager.Users.Where(u => u.UserName == userName)
-                .FirstOrDefaultAsync();
+            return await singleTaskQueue.Enqueue(() => this.userManager.Users.Where(u => u.UserName == userName).FirstOrDefaultAsync());
         }
 
         public async Task<ApplicationUser> GetUserByEmail(string email)
@@ -71,29 +70,6 @@ namespace OpeniT.SMTP.Web.DataRepositories
         }
 
         #region contextMethods
-        public void ResetAll()
-        {
-            var entries = this.context.ChangeTracker
-                                 .Entries()
-                                 .Where(e => e.State != EntityState.Unchanged)
-                                 .ToArray();
-
-            foreach (var entry in entries)
-            {
-                switch (entry.State)
-                {
-                    case EntityState.Modified:
-                        entry.State = EntityState.Unchanged;
-                        break;
-                    case EntityState.Added:
-                        entry.State = EntityState.Detached;
-                        break;
-                    case EntityState.Deleted:
-                        entry.Reload();
-                        break;
-                }
-            }
-        }
         public EntityState StateOf(object o)
         {
             try
@@ -196,12 +172,12 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 {
                     foreach (var collectionEntry in entry.Collections.Where(c => c.IsModified))
                     {
-                        await collectionEntry.ReloadAsync();
+                        await singleTaskQueue.Enqueue(() => collectionEntry.ReloadAsync());
                     }
 
                     if (entry.State == EntityState.Modified)
                     {
-                        await entry.ReloadAsync();
+                        await singleTaskQueue.Enqueue(() => entry.ReloadAsync());
                     }
                 }
             }
@@ -215,12 +191,12 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 {
                     foreach (var referenceEntry in entry.References.Where(r => !r.IsLoaded))
                     {
-                        await referenceEntry.LoadAsync();
+                        await singleTaskQueue.Enqueue(() => referenceEntry.LoadAsync());
                     }
 
                     foreach (var collectionEntry in entry.Collections.Where(c => !c.IsLoaded))
                     {
-                        await collectionEntry.LoadAsync();
+                        await singleTaskQueue.Enqueue(() => collectionEntry.LoadAsync());
                     }
                 }
             }
@@ -234,7 +210,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
                 {
                     foreach (var referenceEntry in entry.References.Where(r => !r.IsLoaded))
                     {
-                        await referenceEntry.LoadAsync();
+                        await singleTaskQueue.Enqueue(() => referenceEntry.LoadAsync());
 
                         if (referenceEntry.CurrentValue != null)
                         {
@@ -244,7 +220,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
 
                     foreach (var collectionEntry in entry.Collections.Where(c => !c.IsLoaded))
                     {
-                        await collectionEntry.LoadAsync();
+                        await singleTaskQueue.Enqueue(() => collectionEntry.LoadAsync());
 
                         foreach (var value in collectionEntry.CurrentValue)
                         {
@@ -262,7 +238,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
             var collectionEntry = this.context.Entry(parent).Collection(childrenPropertyName);
             if (!collectionEntry.IsLoaded)
             {
-                await collectionEntry.LoadAsync();
+                await singleTaskQueue.Enqueue(() => collectionEntry.LoadAsync());
             }
         }
         public async Task LoadNestedChildren<TEnity>(TEnity parent, string childrenPropertyName) where TEnity : class
@@ -270,7 +246,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
             var collectionEntry = this.context.Entry(parent).Collection(childrenPropertyName);
             if (!collectionEntry.IsLoaded)
             {
-                await collectionEntry.LoadAsync();
+                await singleTaskQueue.Enqueue(() => collectionEntry.LoadAsync());
             }
 
             if (collectionEntry.CurrentValue != null)
@@ -327,7 +303,7 @@ namespace OpeniT.SMTP.Web.DataRepositories
             }
             //var deleted = this.context.ChangeTracker.Entries().Where(e => e.State == EntityState.Deleted);
 
-            var results = await this.context.SaveChangesAsync();
+            var results = await singleTaskQueue.Enqueue(() => this.context.SaveChangesAsync());
 
             return results > 0;
         }

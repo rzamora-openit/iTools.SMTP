@@ -22,7 +22,6 @@ namespace OpeniT.SMTP.Web.DataRepositories
         Task<IdentityResult> DeleteUser(ApplicationUser user);
 
         #region contextMethods
-        void ResetAll();
         EntityState StateOf(object o);
         TEntity CloneEntry<TEntity>(TEntity source, TEntity destination = null, bool resetIds = false, bool deepClone = false) where TEntity : class;
         Task ReloadEntry<TEntity>(TEntity entity) where TEntity : class;

@@ -55,11 +55,14 @@ namespace OpeniT.SMTP.Web.Helpers
 					var uri = $"{apiVersion}/{tenantName}/users{query}";
 
 					var result = await client.GetAsync(uri, cancellationToken);
-					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync(cancellationToken).Result}");
+					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync().Result}");
 
-					var content = await result.Content.ReadAsStringAsync(cancellationToken);
-					var jArray = JObject.Parse(content).Value<JArray>("value");
-					profiles = jArray.ToObject<List<AzureProfile>>();
+					if (!cancellationToken.IsCancellationRequested)
+					{
+						var content = await result.Content.ReadAsStringAsync(cancellationToken);
+						var jArray = JObject.Parse(content).Value<JArray>("value");
+						profiles = jArray.ToObject<List<AzureProfile>>();
+					}
 				}
 			}
 			catch (AuthenticationException ex)

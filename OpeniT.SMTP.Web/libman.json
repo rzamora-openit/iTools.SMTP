@@ -46,6 +46,15 @@
 			"provider": "jsdelivr",
 			"library": "grapesjs-custom-code@0.1.3",
 			"destination": "wwwroot/lib/grapesjs-custom-code/"
+		},
+		{
+			"library": "ckeditor@4.16.0",
+			"destination": "wwwroot/lib/ckeditor/"
+		},
+		{
+			"provider": "jsdelivr",
+			"library": "grapesjs-plugin-ckeditor@0.0.10",
+			"destination": "wwwroot/lib/grapesjs-plugin-ckeditor/"
 		}
 	]
 }

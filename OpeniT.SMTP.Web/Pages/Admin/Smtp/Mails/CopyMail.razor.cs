@@ -371,17 +371,18 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 				if (await customRemoteValidator.Validate())
 				{
-					await this.dataRepository.Add<SmtpMail>(model);
-
-					if (await this.dataRepository.SaveChangesAsync())
+					if (await smtpMethods.SendMail(model))
 					{
-						await smtpMethods.SendMail(model);
+						await this.dataRepository.Add<SmtpMail>(model);
 
-						matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
+						if (await this.dataRepository.SaveChangesAsync())
+						{
+							matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
 
-						await OnValidSave.InvokeAsync(model);
+							await OnValidSave.InvokeAsync(model);
 
-						await this.Close();
+							await this.Close();
+						}
 					}
 				}
 				else
@@ -391,6 +392,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			}
 			catch (Exception ex)
 			{
+				grapesjsEditorValueCts?.Cancel();
 				Console.WriteLine(ex.Message);
 			}
 			finally
@@ -415,6 +417,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 			if (disposing)
 			{
+				grapesjsEditorValueCts?.Cancel();
 				loadDataCts?.Cancel();
 				loadSiteValuesCts?.Cancel();
 			}

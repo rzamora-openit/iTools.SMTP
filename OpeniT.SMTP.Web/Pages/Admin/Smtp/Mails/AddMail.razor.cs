@@ -337,14 +337,12 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 				if (await customRemoteValidator.Validate())
 				{
-					if (model != null)
+					if (await smtpMethods.SendMail(model))
 					{
 						await this.dataRepository.Add<SmtpMail>(model);
 
 						if (await this.dataRepository.SaveChangesAsync())
 						{
-							await smtpMethods.SendMail(model);
-
 							matToaster.Add(message: $"Successfully Sent Mail", type: MatToastType.Primary, icon: "notifications");
 
 							await OnValidSave.InvokeAsync(model);
@@ -385,6 +383,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 
 			if (disposing)
 			{
+				grapesjsEditorValueCts?.Cancel();
 				loadSiteValuesCts?.Cancel();
 			}
 

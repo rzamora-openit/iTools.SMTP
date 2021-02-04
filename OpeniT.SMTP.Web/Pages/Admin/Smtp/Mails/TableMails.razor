@@ -29,7 +29,7 @@
 						</ButtonContent>
 						<MenuContent Context="menu">
 							<div class="mdc-text-field-clear-group p-2">
-								<MatTextField Class="full-width dense--5 m-0" ValueChanged="@(async (string e) => { await menu.CloseAsync(); await this.SearchChanged(e); })" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
+								<MatTextField Class="full-width dense--5 m-0" Disabled="isBusy" ValueChanged="@(async (string e) => { await menu.CloseAsync(); await this.SearchChanged(e); })" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
 								@if (!string.IsNullOrWhiteSpace(searchValue) || !string.IsNullOrWhiteSpace(_searchValue))
 								{
 									<MatIcon Class="clear-button" Icon="close" @onclick="async () => { await menu.CloseAsync(); await this.SearchChanged(null); }"></MatIcon>
@@ -47,7 +47,7 @@
 						<span class="text-lg text-bold ml-1">Mails</span>
 					</div>
 					<div class="mdc-text-field-clear-group pl-3">
-						<MatTextField Style="width: 20rem;" Class="dense--5 m-0" ValueChanged="@((string e) => this.SearchChanged(e))" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
+						<MatTextField Style="width: 20rem;" Class="dense--5 m-0" Disabled="isBusy" ValueChanged="@((string e) => this.SearchChanged(e))" OnInput="e => _searchValue = e.Value.ToString()" PlaceHolder="Search" Value="@searchValue" Icon="search"></MatTextField>
 						@if (!string.IsNullOrWhiteSpace(searchValue) || !string.IsNullOrWhiteSpace(_searchValue))
 						{
 							<MatIcon Class="clear-button" Icon="close" @onclick="() => this.SearchChanged(null)"></MatIcon>
@@ -122,7 +122,7 @@
 							{
 								@foreach (var mail in Mails)
 								{
-									<tr>
+									<tr @key="@mail">
 										<td>@mail?.DateCreated.ToSqlDateString()</td>
 										<td>
 											<div class="d-flex align-items-center">

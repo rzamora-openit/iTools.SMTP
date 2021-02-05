@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
 	[Authorize(Roles = "Administrator, Developer")]
-	public partial class ViewMail : ComponentBase
+	public partial class ViewMail : ComponentBase, IDisposable
 	{
 		[Inject] private IDataRepository dataRepository { get; set; }
 
@@ -85,6 +85,27 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			{
 				return this.Close();
 			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (isDisposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				loadDataCts?.Cancel();
+			}
+
+			isDisposed = true;
 		}
 	}
 }

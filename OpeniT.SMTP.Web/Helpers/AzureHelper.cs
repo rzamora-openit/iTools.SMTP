@@ -56,7 +56,7 @@ namespace OpeniT.SMTP.Web.Helpers
 
 					var result = await client.GetAsync(uri, cancellationToken);
 					if (!result.IsSuccessStatusCode) throw new Exception($"{result.Content.ReadAsStringAsync().Result}");
-
+						
 					if (!cancellationToken.IsCancellationRequested)
 					{
 						var content = await result.Content.ReadAsStringAsync(cancellationToken);

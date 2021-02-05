@@ -1,0 +1,9 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+
+<CascadingValue Value="@this" IsFixed="true">
+	<form @key="EditContext.GetHashCode()" @onsubmit="_handleSubmitDelegate" @attributes="Attributes">
+		<CascadingValue Value="EditContext" IsFixed="true">
+			@ChildContent(EditContext)
+		</CascadingValue>
+	</form>
+</CascadingValue>

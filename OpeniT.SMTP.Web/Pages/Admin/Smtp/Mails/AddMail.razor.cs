@@ -36,7 +36,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 		private bool previousIsOpen;
 
 		private EditContext editContext;
-		private CustomRemoteValidator customRemoteValidator;
+		private FormValidator formValidator;
 		private SmtpMail model = new SmtpMail();
 		private string mailFrom;
 		private string mailTo;
@@ -139,7 +139,9 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailFromTextField?.Ref))
 			{
 				mailFrom = mailAddress;
-				this.MailFromChanged(mailFrom);
+
+				this.MailFromAddressChanged(mailFrom);
+				this.MailFromDisplayNameChanged(Profiles?.FirstOrDefault(p => p.Mail == mailFrom)?.DisplayName);
 			}
 			else if (ElementReference.Equals(MailAddressesMenu?.AnchorElement, MailToTextField?.Ref))
 			{
@@ -193,12 +195,17 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			}
 		}
 
-		private void MailFromChanged(string value)
+		private void MailFromAddressChanged(string value)
 		{
 			model.From = model.From ?? new SmtpMailAddress();
 			model.From.Address = value;
-			model.From.DisplayName = Profiles?.FirstOrDefault(p => p.Mail == value)?.DisplayName;
 			editContext.NotifyFieldChanged(() => model.From.Address);
+		}
+
+		private void MailFromDisplayNameChanged(string value)
+		{
+			model.From = model.From ?? new SmtpMailAddress();
+			model.From.DisplayName = value;
 			editContext.NotifyFieldChanged(() => model.From.DisplayName);
 		}
 
@@ -220,22 +227,20 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			editContext.NotifyFieldChanged(() => model.BCC);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> fromValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { FromAddressHasValue, FromAddressIsValid };
-		private Task<ValidationResult> FromAddressHasValue(object value)
+		private HashSet<Func<string, Task<ValidationResult>>> fromAddressValidators =>
+			new HashSet<Func<string, Task<ValidationResult>>>() { FromAddressHasValue, FromAddressIsValid };
+		private Task<ValidationResult> FromAddressHasValue(string value)
 		{
-			var fromAddress = value?.ToString();
-			if (string.IsNullOrWhiteSpace(fromAddress))
+			if (string.IsNullOrWhiteSpace(value))
 			{
-				return Task.FromResult(new ValidationResult("From field requires a value."));
+				return Task.FromResult(new ValidationResult("From Address field requires a value."));
 			}
 
 			return Task.FromResult(ValidationResult.Success);
 		}
-		private Task<ValidationResult> FromAddressIsValid(object value)
+		private Task<ValidationResult> FromAddressIsValid(string value)
 		{
-			var fromAddress = value?.ToString();
-			if (!string.IsNullOrWhiteSpace(fromAddress) && !(new EmailAddressAttribute().IsValid(fromAddress)))
+			if (!string.IsNullOrWhiteSpace(value) && !(new EmailAddressAttribute().IsValid(value)))
 			{
 				return Task.FromResult(new ValidationResult($"{value} is not a valid email address."));
 			}
@@ -243,22 +248,20 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			return Task.FromResult(ValidationResult.Success);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> toValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { ToHasValue, ToIsValid };
-		private Task<ValidationResult> ToHasValue(object value)
+		private HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>> toValidators =>
+			new HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>>() { ToHasValue, ToIsValid };
+		private Task<ValidationResult> ToHasValue(ICollection<SmtpMailAddress> value)
 		{
-			var to = value as ICollection<SmtpMailAddress>;
-			if (to?.Any() != true)
+			if (value?.Any() != true)
 			{
 				return Task.FromResult(new ValidationResult("To field requires a value."));
 			}
 
 			return Task.FromResult(ValidationResult.Success);
 		}
-		private Task<ValidationResult> ToIsValid(object value)
+		private Task<ValidationResult> ToIsValid(ICollection<SmtpMailAddress> value)
 		{
-			var to = value as ICollection<SmtpMailAddress>;
-			var notValidAddress = to?.FirstOrDefault(t => !(new EmailAddressAttribute().IsValid(t?.Address)));
+			var notValidAddress = value?.FirstOrDefault(to => !(new EmailAddressAttribute().IsValid(to?.Address)));
 			if (notValidAddress != null)
 			{
 				return Task.FromResult(new ValidationResult($"{notValidAddress?.Address} is not a valid email address."));
@@ -267,12 +270,11 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			return Task.FromResult(ValidationResult.Success);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> ccValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { CcIsValid };
-		private Task<ValidationResult> CcIsValid(object value)
+		private HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>> ccValidators =>
+			new HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>>() { CcIsValid };
+		private Task<ValidationResult> CcIsValid(ICollection<SmtpMailAddress> value)
 		{
-			var cc = value as ICollection<SmtpMailAddress>;
-			var notValidAddress = cc?.FirstOrDefault(e => !(new EmailAddressAttribute().IsValid(e?.Address)));
+			var notValidAddress = value?.FirstOrDefault(cc => !(new EmailAddressAttribute().IsValid(cc?.Address)));
 			if (notValidAddress != null)
 			{
 				return Task.FromResult(new ValidationResult($"{notValidAddress?.Address} is not a valid email address."));
@@ -281,12 +283,11 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			return Task.FromResult(ValidationResult.Success);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> bccValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { BccIsValid };
-		private Task<ValidationResult> BccIsValid(object value)
+		private HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>> bccValidators =>
+			new HashSet<Func<ICollection<SmtpMailAddress>, Task<ValidationResult>>>() { BccIsValid };
+		private Task<ValidationResult> BccIsValid(ICollection<SmtpMailAddress> value)
 		{
-			var bcc = value as ICollection<SmtpMailAddress>;
-			var notValidAddress = bcc?.FirstOrDefault(e => !(new EmailAddressAttribute().IsValid(e?.Address)));
+			var notValidAddress = value?.FirstOrDefault(bcc => !(new EmailAddressAttribute().IsValid(bcc?.Address)));
 			if (notValidAddress != null)
 			{
 				return Task.FromResult(new ValidationResult($"{notValidAddress?.Address} is not a valid email address."));
@@ -295,12 +296,11 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			return Task.FromResult(ValidationResult.Success);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> subjectValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { SubjectHasValue };
-		private Task<ValidationResult> SubjectHasValue(object value)
+		private HashSet<Func<string, Task<ValidationResult>>> subjectValidators =>
+			new HashSet<Func<string, Task<ValidationResult>>>() { SubjectHasValue };
+		private Task<ValidationResult> SubjectHasValue(string value)
 		{
-			var subject = value?.ToString();
-			if (string.IsNullOrWhiteSpace(subject))
+			if (string.IsNullOrWhiteSpace(value))
 			{
 				return Task.FromResult(new ValidationResult("Subject field requires a value."));
 			}
@@ -308,12 +308,11 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 			return Task.FromResult(ValidationResult.Success);
 		}
 
-		private HashSet<Func<object, Task<ValidationResult>>> bodyValidators =>
-			new HashSet<Func<object, Task<ValidationResult>>>() { BodyHasValue };
-		private Task<ValidationResult> BodyHasValue(object value)
+		private HashSet<Func<string, Task<ValidationResult>>> bodyValidators =>
+			new HashSet<Func<string, Task<ValidationResult>>>() { BodyHasValue };
+		private Task<ValidationResult> BodyHasValue(string value)
 		{
-			var body = value?.ToString();
-			if (string.IsNullOrWhiteSpace(body))
+			if (string.IsNullOrWhiteSpace(value))
 			{
 				return Task.FromResult(new ValidationResult("Body field requires a value."));
 			}
@@ -335,7 +334,7 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 					model.Body = await grapesjsEditor?.GetValue(grapesjsEditorValueCts);
 				}
 
-				if (await customRemoteValidator.Validate())
+				if (await formValidator.Validate())
 				{
 					if (await smtpMethods.SendMail(model))
 					{

@@ -1,0 +1,20 @@
+﻿@namespace OpeniT.SMTP.Web.Pages.Shared.Admin
+@inherits BaseFieldValidator
+@typeparam TValue
+
+<div @ref="@Ref" class="@ClassMapper" style="@Style">
+	@if (MessagesTemplate == null)
+	{
+		<div class="validation-popover-content">
+			@foreach (var validationMessage in this.GetValidationMessage() ?? Enumerable.Empty<string>())
+			{
+				<span class="d-flex align-items-center pt-1 pb-1"><MatIcon Icon="error"></MatIcon><span class="ml-2">@validationMessage</span></span>
+			}
+			<MatIconButton Class="validation-popover-close-button" Icon="cancel" OnClick="() => CurrentEditContext?.MarkAsUnmodified(_fieldIdentifier)"></MatIconButton>
+		</div>
+	}
+	else
+	{
+		@MessagesTemplate(this.GetValidationMessage())
+	}
+</div>

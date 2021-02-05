@@ -1,19 +1,19 @@
 ﻿@namespace OpeniT.SMTP.Web.Pages.Admin
 
-<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!this.isBusy" SurfaceStyle="max-width: 20rem;">
+<MatDialog IsOpen="@(IsOpen && isRendered)" IsOpenChanged="this.IsOpenIsChanged" CanBeClosed="!isBusy" SurfaceStyle="max-width: 20rem;">
 	<MatDialogTitle Class="flex-column">
-		<MatIcon Icon="delete" Class="@(this.isBusy ? "text-disabled" : "text-mdc-primary")" Style="font-size: 5rem;"></MatIcon>
-		<span class="@(this.isBusy ? "text-disabled" : string.Empty)">@mail?.Subject</span>
+		<MatIcon Icon="delete" Class="@(isBusy ? "text-disabled" : "text-mdc-primary")" Style="font-size: 5rem;"></MatIcon>
+		<span class="@(isBusy ? "text-disabled" : string.Empty)">@mail?.Subject</span>
 	</MatDialogTitle>
 	<MatDialogContent>
 		<p class="text-center">Are you sure you want to delete mail?</p>
 	</MatDialogContent>
-	@if (this.isBusy)
+	@if (isBusy)
 	{
 		<MatProgressBar Indeterminate="true" Class="animate-on-bottom"></MatProgressBar>
 	}
 	<MatDialogActions>
-		<MatButton Unelevated="true" Class="mdc-button-primary font-weight-normal mr-1" Disabled="this.isBusy" OnClick="this.Close">Cancel</MatButton>
-		<MatButton Unelevated="true" Disabled="this.isBusy" OnClick="this.Save">Delete</MatButton>
+		<MatButton Unelevated="true" Class="mdc-button-primary font-weight-normal mr-1" Disabled="isBusy" OnClick="this.Close">Cancel</MatButton>
+		<MatButton Unelevated="true" Disabled="isBusy" OnClick="this.Save">Delete</MatButton>
 	</MatDialogActions>
 </MatDialog>

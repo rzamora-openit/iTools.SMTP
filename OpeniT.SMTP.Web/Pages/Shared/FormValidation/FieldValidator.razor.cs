@@ -141,7 +141,7 @@ namespace OpeniT.SMTP.Web.Pages.Shared.Admin
                 }
                 CurrentEditContext.NotifyValidationStateChanged();
 
-                return validationResults.Any();
+                return !validationResults.Any();
             }
 
             return false;

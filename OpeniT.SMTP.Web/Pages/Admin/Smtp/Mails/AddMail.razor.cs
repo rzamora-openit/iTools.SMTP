@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 using OpeniT.SMTP.Web.Pages.Shared;
 using System.Threading;
 using System.ComponentModel.DataAnnotations;
-using Grapesjs;
 using OpeniT.SMTP.Web.DataRepositories;
 using OpeniT.SMTP.Web.Helpers;
+using iTools.Utilities;
 
 namespace OpeniT.SMTP.Web.Pages.Admin
 {
@@ -331,7 +331,8 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				{
 					grapesjsEditorValueCts?.Cancel();
 					grapesjsEditorValueCts = new CancellationTokenSource();
-					model.Body = await grapesjsEditor?.GetValue(grapesjsEditorValueCts);
+					var token = grapesjsEditorValueCts.Token;
+					model.Body = await grapesjsEditor?.GetValue(token);
 				}
 
 				if (await formValidator.Validate())

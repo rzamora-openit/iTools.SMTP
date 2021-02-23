@@ -1,4 +1,4 @@
-﻿using Grapesjs;
+﻿using iTools.Utilities;
 using MatBlazor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
@@ -365,7 +365,8 @@ namespace OpeniT.SMTP.Web.Pages.Admin
 				{
 					grapesjsEditorValueCts?.Cancel();
 					grapesjsEditorValueCts = new CancellationTokenSource();
-					model.Body = await grapesjsEditor?.GetValue(grapesjsEditorValueCts);
+					var token = grapesjsEditorValueCts.Token;
+					model.Body = await grapesjsEditor?.GetValue(token);
 				}
 
 				if (await formValidator.Validate())
